@@ -12,7 +12,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { logAudit } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/admin/security")({
-  head: () => ({ meta: [{ title: "Security — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Security — origin admin" },
+    { name: "description", content: "Manage origin access restrictions and security events." },
+    { property: "og:title", content: "Security — origin admin" },
+    { property: "og:description", content: "Manage origin access restrictions and security events." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: SecurityPage,
 });
 

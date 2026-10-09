@@ -16,6 +16,8 @@ export const Route = createFileRoute("/admin")({
       { name: "description", content: "origin admin panel." },
       { property: "og:title", content: "Admin — origin" },
       { property: "og:description", content: "origin admin panel." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex, nofollow" },
     ],
   }),

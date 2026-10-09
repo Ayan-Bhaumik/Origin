@@ -9,7 +9,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { downloadCsv } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/admin/audit-log")({
-  head: () => ({ meta: [{ title: "Audit log — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Audit log — origin admin" },
+    { name: "description", content: "Review origin administrator activity and audit records." },
+    { property: "og:title", content: "Audit log — origin admin" },
+    { property: "og:description", content: "Review origin administrator activity and audit records." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: AuditPage,
 });
 

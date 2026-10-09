@@ -16,7 +16,15 @@ import { logAudit } from "@/lib/admin-api";
 import { DEFAULT_SETTINGS, timerLabel, type AppSettings } from "@/lib/clip-rules";
 
 export const Route = createFileRoute("/admin/settings")({
-  head: () => ({ meta: [{ title: "Settings — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Settings — origin admin" },
+    { name: "description", content: "Configure origin sharing limits, expiry and service settings." },
+    { property: "og:title", content: "Settings — origin admin" },
+    { property: "og:description", content: "Configure origin sharing limits, expiry and service settings." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: SettingsPage,
 });
 

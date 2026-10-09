@@ -11,7 +11,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { adminDeleteClip, logAudit } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/admin/reports")({
-  head: () => ({ meta: [{ title: "Reports — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Reports — origin admin" },
+    { name: "description", content: "Review reported clips and moderation actions in origin." },
+    { property: "og:title", content: "Reports — origin admin" },
+    { property: "og:description", content: "Review reported clips and moderation actions in origin." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: ReportsPage,
 });
 
