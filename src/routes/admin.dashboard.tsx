@@ -6,7 +6,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/admin/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Dashboard — origin admin" },
+    { name: "description", content: "View origin clip activity and usage statistics." },
+    { property: "og:title", content: "Dashboard — origin admin" },
+    { property: "og:description", content: "View origin clip activity and usage statistics." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   component: Dashboard,
 });
 

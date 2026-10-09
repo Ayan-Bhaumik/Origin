@@ -19,7 +19,15 @@ import { adminDeleteClip, adminForceExpire, logAudit, type Clip } from "@/lib/ad
 import { formatBytes, maxExtendedExpiry, normalizeCode, validateCustomCode } from "@/lib/clip-rules";
 
 export const Route = createFileRoute("/admin/clips")({
-  head: () => ({ meta: [{ title: "Clips — origin admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [
+    { title: "Clips — origin admin" },
+    { name: "description", content: "Manage shared text, images and files in origin." },
+    { property: "og:title", content: "Clips — origin admin" },
+    { property: "og:description", content: "Manage shared text, images and files in origin." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary" },
+    { name: "robots", content: "noindex" },
+  ] }),
   validateSearch: (s: Record<string, unknown>) => ({ code: typeof s["code"] === "string" ? (s["code"] as string) : undefined }),
   component: ClipsPage,
 });
