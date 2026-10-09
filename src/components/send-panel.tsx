@@ -120,15 +120,22 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   }, [customCode, settings.blocked_codes, check]);
 
   const acceptImage = (f: File) => {
-    if (!f.type.startsWith("image/")) return toast.error("Only images can go here.");
-    if (f.size > settings.max_image_bytes) return toast.error(`Images must be under ${formatBytes(settings.max_image_bytes)}.`);
-    setImage(f);
-    setKind("image");
+    if (!f.type.startsWith("image/")) {
+      toast.error("Only images can go here.");
+    } else if (f.size > settings.max_image_bytes) {
+      toast.error(`Images must be under ${formatBytes(settings.max_image_bytes)}.`);
+    } else {
+      setImage(f);
+      setKind("image");
+    }
   };
   const acceptFile = (f: File) => {
-    if (f.size > settings.max_file_bytes) return toast.error(`Files must be under ${formatBytes(settings.max_file_bytes)}.`);
-    setFile(f);
-    setKind("file");
+    if (f.size > settings.max_file_bytes) {
+      toast.error(`Files must be under ${formatBytes(settings.max_file_bytes)}.`);
+    } else {
+      setFile(f);
+      setKind("file");
+    }
   };
 
   const onPaste = (e: ClipboardEvent<HTMLDivElement>) => {
