@@ -14,16 +14,271 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      audit_log: {
+        Row: {
+          action: string
+          admin_id: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          target: string | null
+        }
+        Insert: {
+          action: string
+          admin_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          target?: string | null
+        }
+        Update: {
+          action?: string
+          admin_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          target?: string | null
+        }
+        Relationships: []
+      }
+      clips: {
+        Row: {
+          burn_after_read: boolean
+          code: string
+          content: string | null
+          created_at: string
+          delete_token: string | null
+          expired_at: string | null
+          expires_at: string
+          failed_pin_attempts: number
+          file_mime: string | null
+          file_name: string | null
+          file_path: string | null
+          file_size: number | null
+          id: string
+          last_accessed_at: string | null
+          locked_until: string | null
+          pin_hash: string | null
+          pin_protected: boolean
+          status: string
+          type: string
+          view_count: number
+        }
+        Insert: {
+          burn_after_read?: boolean
+          code: string
+          content?: string | null
+          created_at?: string
+          delete_token?: string | null
+          expired_at?: string | null
+          expires_at: string
+          failed_pin_attempts?: number
+          file_mime?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          last_accessed_at?: string | null
+          locked_until?: string | null
+          pin_hash?: string | null
+          pin_protected?: boolean
+          status?: string
+          type: string
+          view_count?: number
+        }
+        Update: {
+          burn_after_read?: boolean
+          code?: string
+          content?: string | null
+          created_at?: string
+          delete_token?: string | null
+          expired_at?: string | null
+          expires_at?: string
+          failed_pin_attempts?: number
+          file_mime?: string | null
+          file_name?: string | null
+          file_path?: string | null
+          file_size?: number | null
+          id?: string
+          last_accessed_at?: string | null
+          locked_until?: string | null
+          pin_hash?: string | null
+          pin_protected?: boolean
+          status?: string
+          type?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
+      ip_rules: {
+        Row: {
+          created_at: string
+          id: string
+          ip: string
+          note: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip: string
+          note?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip?: string
+          note?: string | null
+        }
+        Relationships: []
+      }
+      rate_events: {
+        Row: {
+          action: string
+          created_at: string
+          id: number
+          ip: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: number
+          ip: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: number
+          ip?: string
+        }
+        Relationships: []
+      }
+      rate_limit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          ip: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          ip: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          ip?: string
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          clip_code: string
+          created_at: string
+          id: string
+          reason: string
+          status: string
+        }
+        Insert: {
+          clip_code: string
+          created_at?: string
+          id?: string
+          reason: string
+          status?: string
+        }
+        Update: {
+          clip_code?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      storage_purge: {
+        Row: {
+          file_path: string
+          id: number
+          purge_after: string
+        }
+        Insert: {
+          file_path: string
+          id?: number
+          purge_after?: string
+        }
+        Update: {
+          file_path?: string
+          id?: number
+          purge_after?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      expire_clips: { Args: never; Returns: number }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      hit_rate_limit: {
+        Args: {
+          _action: string
+          _ip: string
+          _max: number
+          _window_seconds: number
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +405,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin"],
+    },
   },
 } as const
