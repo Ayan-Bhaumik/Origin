@@ -20,6 +20,7 @@ import { Route as AdminSecurityRouteImport } from './routes/admin.security'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as ApiPublicNotifyTokenRouteImport } from './routes/api/public/notify.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,11 @@ const RCodeRoute = RCodeRouteImport.update({
   path: '/r/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNotifyTokenRoute = ApiPublicNotifyTokenRouteImport.update({
+  id: '/api/public/notify/$token',
+  path: '/api/public/notify/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/admin_/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/r/$code'
     | '/admin/'
+    | '/api/public/notify/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/r/$code'
     | '/admin'
+    | '/api/public/notify/$token'
   id:
     | '__root__'
     | '/'
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/admin_/login'
     | '/r/$code'
     | '/admin/'
+    | '/api/public/notify/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -162,6 +174,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   RCodeRoute: typeof RCodeRoute
+  ApiPublicNotifyTokenRoute: typeof ApiPublicNotifyTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -243,6 +256,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/notify/$token': {
+      id: '/api/public/notify/$token'
+      path: '/api/public/notify/$token'
+      fullPath: '/api/public/notify/$token'
+      preLoaderRoute: typeof ApiPublicNotifyTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -273,6 +293,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   RCodeRoute: RCodeRoute,
+  ApiPublicNotifyTokenRoute: ApiPublicNotifyTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
