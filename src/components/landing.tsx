@@ -92,6 +92,7 @@ export function Landing({ settings, initialCode }: { settings: PublicSettings; i
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span className="font-mono font-semibold text-foreground">origin</span>
           <p>Content is temporary and auto-deleted. The site owner can access stored content. Don't share sensitive information.</p>
+          <span className="hidden shrink-0 font-mono md:inline" aria-label="Keyboard shortcuts: Command Enter to send, slash to retrieve">⌘↵ Send · / Retrieve</span>
           <Link
             to="/admin/login"
             className="shrink-0 rounded text-muted-foreground/70 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

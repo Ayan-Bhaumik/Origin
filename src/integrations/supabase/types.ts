@@ -58,11 +58,15 @@ export type Database = {
           id: string
           last_accessed_at: string | null
           locked_until: string | null
+          notified_at: string | null
+          notify_token: string | null
+          notify_url: string | null
           pin_hash: string | null
           pin_protected: boolean
           status: string
           type: string
           view_count: number
+          viewed_at: string | null
         }
         Insert: {
           burn_after_read?: boolean
@@ -80,11 +84,15 @@ export type Database = {
           id?: string
           last_accessed_at?: string | null
           locked_until?: string | null
+          notified_at?: string | null
+          notify_token?: string | null
+          notify_url?: string | null
           pin_hash?: string | null
           pin_protected?: boolean
           status?: string
           type: string
           view_count?: number
+          viewed_at?: string | null
         }
         Update: {
           burn_after_read?: boolean
@@ -102,11 +110,15 @@ export type Database = {
           id?: string
           last_accessed_at?: string | null
           locked_until?: string | null
+          notified_at?: string | null
+          notify_token?: string | null
+          notify_url?: string | null
           pin_hash?: string | null
           pin_protected?: boolean
           status?: string
           type?: string
           view_count?: number
+          viewed_at?: string | null
         }
         Relationships: []
       }

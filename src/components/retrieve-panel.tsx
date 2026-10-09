@@ -9,7 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { reportClip, retrieveClip, type RetrieveResult } from "@/lib/clips.functions";
-import { formatBytes } from "@/lib/clip-rules";
+import { formatBytes, looksLikeMarkdown } from "@/lib/clip-rules";
+import { useOnline } from "@/hooks/use-online";
+import { MarkdownView } from "@/components/markdown-view";
+import { cn } from "@/lib/utils";
 import { useCountdown } from "@/hooks/use-countdown";
 
 type Ok = Extract<RetrieveResult, { status: "ok" }>;
@@ -31,10 +34,30 @@ export function RetrievePanel({ initialCode }: { initialCode?: string | undefine
   const [clip, setClip] = useState<Ok | null>(null);
   const retrieve = useServerFn(retrieveClip);
   const auto = useRef(false);
+  const online = useOnline();
+  const codeRef = useRef<HTMLInputElement>(null);
+
+  // "/" focuses the code box when not typing elsewhere; Escape in the form clears it.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      const typing = !!t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable);
+      if (e.key === "/" && !typing && !e.metaKey && !e.ctrlKey && !document.querySelector("[role=dialog],[role=alertdialog]")) {
+        e.preventDefault();
+        codeRef.current?.focus();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const run = async (withPin?: string) => {
     const c = code.trim();
     if (!c) return;
+    if (!navigator.onLine) {
+      setError("You're offline. Connect to the internet to retrieve clips.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -82,12 +105,13 @@ export function RetrievePanel({ initialCode }: { initialCode?: string | undefine
   if (clip) return <ClipView clip={clip} onReset={reset} />;
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5">
+    <form id="retrieve-form" onSubmit={submit} onKeyDown={(e) => { if (e.key === "Escape") { setCode(""); setPin(""); setNeedPin(false); setError(null); (e.target as HTMLElement).blur(); } }} className="flex flex-col gap-5">
       <h2 className="text-lg font-semibold tracking-tight">Retrieve</h2>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="retrieve-code" className="text-muted-foreground">Enter code</Label>
         <Input
           id="retrieve-code"
+          ref={codeRef}
           value={code}
           onChange={(e) => {
             setCode(e.target.value.toUpperCase().replace(/\s/g, ""));
@@ -135,8 +159,8 @@ export function RetrievePanel({ initialCode }: { initialCode?: string | undefine
         </div>
       )}
 
-      <Button type="submit" size="lg" variant={needPin ? "default" : "outline"} className="h-12 w-full text-base active:scale-[0.99]" disabled={loading || !code.trim() || (needPin && pin.length < 4)}>
-        {loading ? "Retrieving…" : needPin ? "Unlock" : "Retrieve"}
+      <Button type="submit" size="lg" variant={needPin ? "default" : "outline"} className="h-12 w-full text-base active:scale-[0.99]" disabled={!online || loading || !code.trim() || (needPin && pin.length < 4)}>
+        {!online ? "You're offline" : loading ? "Retrieving…" : needPin ? "Unlock" : "Retrieve"}
       </Button>
     </form>
   );
@@ -144,6 +168,8 @@ export function RetrievePanel({ initialCode }: { initialCode?: string | undefine
 
 function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
   const { label, expired } = useCountdown(clip.expiresAt);
+  const isMd = clip.type === "text" && looksLikeMarkdown(clip.content ?? "");
+  const [mode, setMode] = useState<"raw" | "preview">(isMd ? "preview" : "raw");
   const copyText = async () => {
     await navigator.clipboard.writeText(clip.content ?? "");
     toast.success("Copied to clipboard");
@@ -185,7 +211,20 @@ function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
 
       {clip.type === "text" && (
         <>
-          <Textarea readOnly value={clip.content ?? ""} aria-label="Clip text" className="min-h-44 font-mono text-sm" />
+          {isMd && (
+            <div role="tablist" aria-label="Text view" className="inline-flex self-start rounded-md border bg-muted p-0.5 text-xs">
+              {(["raw", "preview"] as const).map((m) => (
+                <button key={m} role="tab" aria-selected={mode === m} onClick={() => setMode(m)} className={cn("rounded px-3 py-1 font-medium capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", mode === m ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground")}>
+                  {m}
+                </button>
+              ))}
+            </div>
+          )}
+          {isMd && mode === "preview" ? (
+            <MarkdownView content={clip.content ?? ""} />
+          ) : (
+            <Textarea readOnly value={clip.content ?? ""} aria-label="Clip text" className="min-h-44 font-mono text-sm" />
+          )}
           <Button onClick={copyText}><Copy /> Copy</Button>
         </>
       )}

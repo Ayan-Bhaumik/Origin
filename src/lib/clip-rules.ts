@@ -85,3 +85,34 @@ export function mimeAllowed(mime: string, allowlist: string[]) {
     rule.endsWith("/*") ? mime.startsWith(rule.slice(0, -1)) : mime === rule,
   );
 }
+
+/** Heuristic: content looks like markdown (headings, bold, list items, code fences). */
+export function looksLikeMarkdown(text: string) {
+  return /^#{1,6}\s/m.test(text) || /\*\*[^*\n]+\*\*/.test(text) || /^\s*[-*]\s+\S/m.test(text) || /```/.test(text);
+}
+
+/** Read-receipt ping URLs must be public https URLs (no localhost / IP literals). */
+export function isSafeNotifyUrl(value: string) {
+  let u: URL;
+  try {
+    u = new URL(value);
+  } catch {
+    return false;
+  }
+  if (u.protocol !== "https:") return false;
+  const h = u.hostname.toLowerCase();
+  if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal")) return false;
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":") || h.startsWith("[")) return false;
+  return h.includes(".");
+}
+
+export const HISTORY_LIMIT = 5;
+export type HistoryItem = { code: string; type: "text" | "image" | "file"; expiresAt: string; createdAt: string };
+
+/** Newest first, de-duplicated by code, expired items dropped, capped at HISTORY_LIMIT. */
+export function addToHistory(list: HistoryItem[], item: HistoryItem, now = Date.now()) {
+  return pruneHistory([item, ...list.filter((i) => i.code !== item.code)], now);
+}
+export function pruneHistory(list: HistoryItem[], now = Date.now()) {
+  return list.filter((i) => new Date(i.expiresAt).getTime() > now).slice(0, HISTORY_LIMIT);
+}

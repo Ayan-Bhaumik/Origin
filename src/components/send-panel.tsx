@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ClipboardEvent, type DragEvent } from
 import { useServerFn } from "@tanstack/react-start";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
-import { Check, ChevronRight, Copy, FileIcon, ImageIcon, Link2, Trash2, Type, Upload, X } from "lucide-react";
+import { Bell, Check, ChevronRight, Eye, Copy, FileIcon, ImageIcon, Link2, Trash2, Type, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +12,10 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { checkCodeAvailable, createClip, createUploadUrl, deleteOwnClip } from "@/lib/clips.functions";
-import { formatBytes, timerLabel, validateCustomCode, validatePin } from "@/lib/clip-rules";
+import { checkCodeAvailable, createClip, createUploadUrl, deleteOwnClip, getReceipt } from "@/lib/clips.functions";
+import { RecentClips, forgetClip, rememberClip } from "@/components/recent-clips";
+import { useOnline } from "@/hooks/use-online";
+import { formatBytes, isSafeNotifyUrl, timerLabel, validateCustomCode, validatePin } from "@/lib/clip-rules";
 import { useCountdown } from "@/hooks/use-countdown";
 import { cn } from "@/lib/utils";
 
@@ -71,8 +73,11 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   const [pin, setPin] = useState("");
   const [burn, setBurn] = useState(false);
   const [timer, setTimer] = useState(settings.default_timer_seconds);
+  const [notify, setNotify] = useState(false);
+  const [notifyUrl, setNotifyUrl] = useState("");
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ code: string; expiresAt: string } | null>(null);
+  const [result, setResult] = useState<{ code: string; expiresAt: string; notifyToken: string | null } | null>(null);
+  const online = useOnline();
 
   const check = useServerFn(checkCodeAvailable);
   const create = useServerFn(createClip);
@@ -156,7 +161,10 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     }
   };
 
+  const notifyUrlBad = notify && !!notifyUrl.trim() && !isSafeNotifyUrl(notifyUrl.trim());
   const canSend =
+    online &&
+    !notifyUrlBad &&
     !settings.maintenance_mode &&
     !sending &&
     codeState !== "taken" &&
@@ -199,11 +207,14 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
           pin: pin || undefined,
           burnAfterRead: burn,
           timerSeconds: timer,
+          notify,
+          notifyUrl: notify && notifyUrl.trim() ? notifyUrl.trim() : undefined,
         },
       });
       if (!r.ok) throw new Error(r.error);
       saveToken(r.code, r.deleteToken);
-      setResult({ code: r.code, expiresAt: r.expiresAt });
+      rememberClip({ code: r.code, type: kind, expiresAt: r.expiresAt, createdAt: new Date().toISOString() });
+      setResult({ code: r.code, expiresAt: r.expiresAt, notifyToken: r.notifyToken });
       toast.success("Clip ready to share");
     } catch (e) {
       toast.error(errMsg((e as Error).message));
@@ -220,11 +231,42 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     setCustomCode("");
     setPin("");
     setBurn(false);
+    setNotify(false);
+    setNotifyUrl("");
     setTimer(settings.default_timer_seconds);
     setKind("text");
   };
 
-  if (result) return <SendSuccess code={result.code} expiresAt={result.expiresAt} onReset={reset} />;
+  // Keyboard: Cmd/Ctrl+Enter sends, Escape clears the form (when no dialog is open).
+  const sendRef = useRef(send);
+  sendRef.current = send;
+  const resetRef = useRef(reset);
+  resetRef.current = reset;
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && !result) {
+        const t = e.target as HTMLElement | null;
+        if (t?.closest("#retrieve-form")) return;
+        e.preventDefault();
+        sendRef.current();
+      } else if (e.key === "Escape" && !document.querySelector("[role=dialog],[role=alertdialog]")) {
+        const t = e.target as HTMLElement | null;
+        if (t?.closest("#retrieve-form")) return;
+        resetRef.current();
+        (document.activeElement as HTMLElement | null)?.blur?.();
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [result]);
+
+  if (result)
+    return (
+      <div className="flex flex-col gap-5">
+        <SendSuccess code={result.code} expiresAt={result.expiresAt} notifyToken={result.notifyToken} onReset={reset} />
+        <RecentClips />
+      </div>
+    );
 
   return (
     <div onPaste={onPaste} className="flex flex-col gap-5">
@@ -327,6 +369,28 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
             <Label htmlFor="burn">Delete after first view</Label>
             <Switch id="burn" checked={burn} onCheckedChange={setBurn} />
           </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-4">
+              <Label htmlFor="notify">Notify me when viewed</Label>
+              <Switch id="notify" checked={notify} onCheckedChange={setNotify} />
+            </div>
+            {notify && (
+              <>
+                <Input
+                  id="notify-url"
+                  type="url"
+                  inputMode="url"
+                  value={notifyUrl}
+                  onChange={(e) => setNotifyUrl(e.target.value)}
+                  placeholder="https://your-webhook.com/ping (optional)"
+                  aria-label="Ping URL"
+                  className="font-mono text-xs"
+                />
+                <p className="text-xs text-muted-foreground">We'll send one GET request to this URL on first view. Leave empty to get a status link instead.</p>
+                {notifyUrlBad && <p className="text-xs text-destructive">Use a public https:// address.</p>}
+              </>
+            )}
+          </div>
         </CollapsibleContent>
       </Collapsible>
 
@@ -350,8 +414,10 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
       </div>
 
       <Button size="lg" className="h-12 w-full text-base active:scale-[0.99]" disabled={!canSend} onClick={send}>
-        {settings.maintenance_mode ? "Sending paused for maintenance" : sending ? "Sending…" : "Send"}
+        {!online ? "You're offline" : settings.maintenance_mode ? "Sending paused for maintenance" : sending ? "Sending…" : "Send"}
       </Button>
+
+      <RecentClips />
     </div>
   );
 }
@@ -396,7 +462,7 @@ function DropZone({ accept, hint, onFile }: { accept?: string; hint: string; onF
   );
 }
 
-function SendSuccess({ code, expiresAt, onReset }: { code: string; expiresAt: string; onReset: () => void }) {
+function SendSuccess({ code, expiresAt, notifyToken, onReset }: { code: string; expiresAt: string; notifyToken: string | null; onReset: () => void }) {
   const { label, expired } = useCountdown(expiresAt);
   const [deleting, setDeleting] = useState(false);
   const [deleted, setDeleted] = useState(false);
@@ -419,6 +485,7 @@ function SendSuccess({ code, expiresAt, onReset }: { code: string; expiresAt: st
     setDeleting(false);
     if (r.ok) {
       dropToken(code);
+      forgetClip(code);
       setDeleted(true);
       toast.success("Clip deleted");
     } else toast.error(errMsg(r.error ?? "not_found"));
@@ -440,6 +507,7 @@ function SendSuccess({ code, expiresAt, onReset }: { code: string; expiresAt: st
             <QRCodeSVG value={link} size={148} bgColor="transparent" fgColor="currentColor" className="text-foreground" aria-label="QR code for the retrieval link" />
           </div>
           <p className="text-sm tabular-nums text-muted-foreground" aria-live="polite">{expired ? "Expired" : label}</p>
+          {notifyToken && <Receipt token={notifyToken} />}
         </>
       )}
       <div className="grid w-full grid-cols-2 gap-2">
@@ -463,6 +531,41 @@ function SendSuccess({ code, expiresAt, onReset }: { code: string; expiresAt: st
           </AlertDialog>
         )}
         <Button className={cn(deleted && "col-span-2")} onClick={onReset}><Check /> Send another</Button>
+      </div>
+    </div>
+  );
+}
+
+function Receipt({ token }: { token: string }) {
+  const [viewedAt, setViewedAt] = useState<string | null>(null);
+  const poll = useServerFn(getReceipt);
+  const url = `${typeof window !== "undefined" ? window.location.origin : ""}/api/public/notify/${token}`;
+  useEffect(() => {
+    if (viewedAt) return undefined;
+    let stop = false;
+    const tick = async () => {
+      try {
+        const r = await poll({ data: { token } });
+        if (!stop && r.viewedAt) setViewedAt(r.viewedAt);
+      } catch {
+        // ignore; try again next tick
+      }
+    };
+    const id = setInterval(tick, 10000);
+    return () => {
+      stop = true;
+      clearInterval(id);
+    };
+  }, [token, viewedAt, poll]);
+  return (
+    <div className="flex w-full flex-col gap-2 rounded-lg border p-3 text-left">
+      <p className="flex items-center gap-1.5 text-sm font-medium" aria-live="polite">
+        {viewedAt ? <><Eye className="size-4 text-success" /> Viewed {new Date(viewedAt).toLocaleTimeString()}</> : <><Bell className="size-4 text-muted-foreground" /> Not viewed yet</>}
+      </p>
+      <p className="text-xs text-muted-foreground">Status link — only shown once, copy it now:</p>
+      <div className="flex gap-2">
+        <Input readOnly value={url} aria-label="Read receipt status link" className="h-9 font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+        <Button variant="outline" size="icon" className="size-9 shrink-0" aria-label="Copy status link" onClick={async () => { await navigator.clipboard.writeText(url); toast.success("Status link copied"); }}><Copy /></Button>
       </div>
     </div>
   );
