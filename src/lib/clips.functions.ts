@@ -20,6 +20,7 @@ import {
   sanitizeFileName,
   validateCustomCode,
   validatePin,
+  isSafeNotifyUrl,
 } from "./clip-rules";
 
 const codeSchema = z.string().trim().min(1).max(20);
@@ -96,6 +97,8 @@ const createSchema = z.object({
   pin: z.string().max(8).optional(),
   burnAfterRead: z.boolean(),
   timerSeconds: z.number().int().positive(),
+  notify: z.boolean().optional(),
+  notifyUrl: z.string().trim().max(500).optional(),
 });
 
 export const createClip = createServerFn({ method: "POST" })
@@ -111,6 +114,8 @@ export const createClip = createServerFn({ method: "POST" })
       const e = validatePin(data.pin);
       if (e) return { ok: false as const, error: e };
     }
+    if (data.notifyUrl && !isSafeNotifyUrl(data.notifyUrl))
+      return { ok: false as const, error: "Ping URL must be a public https:// address." };
     await sweep();
 
     let fileSize: number | null = null;
@@ -161,6 +166,7 @@ export const createClip = createServerFn({ method: "POST" })
     }
 
     const deleteToken = randomToken();
+    const notifyToken = data.notify ? randomToken() : null;
     const expiresAt = new Date(Date.now() + data.timerSeconds * 1000).toISOString();
     const { error } = await supabaseAdmin.from("clips").insert({
       code,
@@ -175,13 +181,15 @@ export const createClip = createServerFn({ method: "POST" })
       burn_after_read: data.burnAfterRead,
       delete_token: await sha256(deleteToken),
       expires_at: expiresAt,
+      notify_token: notifyToken ? await sha256(notifyToken) : null,
+      notify_url: notifyToken && data.notifyUrl ? data.notifyUrl : null,
     });
     if (error) {
       if (error.code === "23505") return { ok: false as const, error: "taken" };
       console.error(error);
       return { ok: false as const, error: "save_failed" };
     }
-    return { ok: true as const, code: code.toUpperCase(), deleteToken, expiresAt };
+    return { ok: true as const, code: code.toUpperCase(), deleteToken, expiresAt, notifyToken };
   });
 
 export type RetrieveResult =
@@ -272,6 +280,8 @@ export const retrieveClip = createServerFn({ method: "POST" })
         .eq("id", clip.id);
     }
 
+    if (clip.notify_token && !clip.viewed_at) await sendReceipt(clip.id, clip.code, clip.notify_url);
+
     return {
       status: "ok",
       type: clip.type as "text" | "image" | "file",
@@ -358,4 +368,36 @@ export const bootstrapAdmin = createServerFn({ method: "POST" })
     if (error || !created.user) return { ok: false, error: error?.message ?? "Could not create account." };
     await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
     return { ok: true, error: null };
+  });
+
+/** Marks the first view once and pings the sender's URL once (no retries). */
+async function sendReceipt(id: string, code: string, url: string | null) {
+  const now = new Date().toISOString();
+  const { data: won } = await supabaseAdmin
+    .from("clips")
+    .update({ viewed_at: now })
+    .eq("id", id)
+    .is("viewed_at", null)
+    .select("id");
+  if (!won?.length || !url || !isSafeNotifyUrl(url)) return;
+  try {
+    const u = new URL(url);
+    u.searchParams.set("code", code.toUpperCase());
+    u.searchParams.set("viewed_at", now);
+    await fetch(u, { method: "GET", redirect: "manual", signal: AbortSignal.timeout(3000) });
+  } catch {
+    // fire and forget
+  }
+  await supabaseAdmin.from("clips").update({ notified_at: now }).eq("id", id);
+}
+
+export const getReceipt = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ token: z.string().min(16).max(100) }).parse(d))
+  .handler(async ({ data }) => {
+    const { data: row } = await supabaseAdmin
+      .from("clips")
+      .select("viewed_at")
+      .eq("notify_token", await sha256(data.token))
+      .maybeSingle();
+    return { found: !!row, viewedAt: row?.viewed_at ?? null };
   });
