@@ -18,7 +18,7 @@ const FAQ = [
   { q: "What are the size limits?", a: "Text up to 100 KB, images up to 10 MB, and files up to 25 MB." },
 ];
 
-export function Landing({ settings, initialCode }: { settings: PublicSettings; initialCode?: string }) {
+export function Landing({ settings, initialCode }: { settings: PublicSettings; initialCode?: string | undefined }) {
   return (
     <div className="relative min-h-screen overflow-x-hidden">
       <div className="grid-bg pointer-events-none absolute inset-x-0 top-0 h-[520px]" aria-hidden />

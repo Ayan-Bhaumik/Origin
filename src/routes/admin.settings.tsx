@@ -49,14 +49,23 @@ function SettingsPage() {
   const set = <K extends keyof AppSettings>(k: K, v: AppSettings[K]) => setForm({ ...form, [k]: v });
 
   const save = async () => {
-    if (!form.allowed_timers.length) return toast.error("Allow at least one timer.");
-    if (!form.allowed_timers.includes(form.default_timer_seconds)) return toast.error("The default timer must be one of the allowed timers.");
+    if (!form.allowed_timers.length) {
+      toast.error("Allow at least one timer.");
+      return;
+    }
+    if (!form.allowed_timers.includes(form.default_timer_seconds)) {
+      toast.error("The default timer must be one of the allowed timers.");
+      return;
+    }
     setSaving(true);
     const changed = (Object.keys(form) as (keyof AppSettings)[]).filter((k) => JSON.stringify(form[k]) !== JSON.stringify(data?.[k]));
     const now = new Date().toISOString();
     const { error } = await supabase.from("settings").upsert(changed.map((k) => ({ key: k, value: form[k] as never, updated_at: now })));
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     if (changed.length) await logAudit("settings_change", null, changed.join(", "));
     toast.success("Settings saved");
     qc.invalidateQueries({ queryKey: ["admin", "settings"] });

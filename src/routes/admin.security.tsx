@@ -32,9 +32,15 @@ function SecurityPage() {
   const add = async (e: FormEvent) => {
     e.preventDefault();
     const value = ip.trim();
-    if (!/^[0-9a-fA-F:.]{3,45}$/.test(value)) return toast.error("Enter a valid IP address.");
+    if (!/^[0-9a-fA-F:.]{3,45}$/.test(value)) {
+      toast.error("Enter a valid IP address.");
+      return;
+    }
     const { error } = await supabase.from("ip_rules").insert({ ip: value, note: note.trim() || null });
-    if (error) return toast.error(error.code === "23505" ? "That IP is already blocked." : error.message);
+    if (error) {
+      toast.error(error.code === "23505" ? "That IP is already blocked." : error.message);
+      return;
+    }
     await logAudit("ip_block", value, note.trim() || undefined);
     setIp("");
     setNote("");

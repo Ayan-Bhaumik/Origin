@@ -125,7 +125,7 @@ export const createClip = createServerFn({ method: "POST" })
       const [, folder, name] = data.filePath.split("/");
       const { data: listed } = await supabaseAdmin.storage
         .from(BUCKET)
-        .list(`clips/${folder}`, { search: name });
+        .list(`clips/${folder}`, { search: name ?? "" });
       const obj = listed?.find((o) => o.name === name);
       if (!obj) return { ok: false as const, error: "bad_file" };
       fileSize = Number((obj.metadata as { size?: number } | null)?.size ?? 0);
@@ -165,8 +165,8 @@ export const createClip = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.from("clips").insert({
       code,
       type: data.type,
-      content: data.type === "text" ? data.content : null,
-      file_path: data.type === "text" ? null : data.filePath,
+      content: data.type === "text" ? (data.content ?? "") : null,
+      file_path: data.type === "text" ? null : (data.filePath ?? null),
       file_name: data.type === "text" ? null : sanitizeFileName(data.fileName ?? "file"),
       file_mime: data.type === "text" ? "text/plain" : data.fileMime || "application/octet-stream",
       file_size: data.type === "text" ? new TextEncoder().encode(data.content ?? "").length : fileSize,

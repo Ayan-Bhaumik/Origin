@@ -22,7 +22,7 @@ const MESSAGES: Record<string, string> = {
   blocked: "Retrieval is unavailable from your network.",
 };
 
-export function RetrievePanel({ initialCode }: { initialCode?: string }) {
+export function RetrievePanel({ initialCode }: { initialCode?: string | undefined }) {
   const [code, setCode] = useState(initialCode?.toUpperCase() ?? "");
   const [pin, setPin] = useState("");
   const [needPin, setNeedPin] = useState(false);
@@ -48,7 +48,7 @@ export function RetrievePanel({ initialCode }: { initialCode?: string }) {
         setError(`Incorrect PIN. ${r.remaining} attempt${r.remaining === 1 ? "" : "s"} remaining.`);
         setPin("");
       } else {
-        setError(MESSAGES[r.status]);
+        setError(MESSAGES[r.status] ?? "Something went wrong.");
         if (r.status === "locked") setPin("");
       }
     } catch {

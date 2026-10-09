@@ -36,7 +36,9 @@ function AdminLogin() {
 
   useEffect(() => {
     exists().then((r) => setSetup(!r.exists));
-    isCurrentUserAdmin().then((ok) => ok && navigate({ to: "/admin/dashboard" }));
+    isCurrentUserAdmin().then((ok) => {
+      if (ok) navigate({ to: "/admin/dashboard" });
+    });
   }, [exists, navigate]);
 
   const submit = async (e: FormEvent) => {

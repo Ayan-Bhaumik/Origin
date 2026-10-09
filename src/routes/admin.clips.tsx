@@ -20,7 +20,7 @@ import { formatBytes, maxExtendedExpiry, normalizeCode, validateCustomCode } fro
 
 export const Route = createFileRoute("/admin/clips")({
   head: () => ({ meta: [{ title: "Clips — origin admin" }, { name: "robots", content: "noindex" }] }),
-  validateSearch: (s: Record<string, unknown>) => ({ code: typeof s.code === "string" ? s.code : undefined }),
+  validateSearch: (s: Record<string, unknown>) => ({ code: typeof s["code"] === "string" ? (s["code"] as string) : undefined }),
   component: ClipsPage,
 });
 
@@ -58,7 +58,7 @@ function ClipsPage() {
   });
 
   useEffect(() => {
-    if (initialCode && data?.rows.length === 1) setOpenId(data.rows[0].id);
+    if (initialCode && data?.rows.length === 1) setOpenId(data.rows[0]!.id);
   }, [initialCode, data]);
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin"] });

@@ -29,7 +29,10 @@ function ReportsPage() {
 
   const dismiss = async (id: string, code: string) => {
     const { error } = await supabase.from("reports").update({ status: "dismissed" }).eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     await logAudit("report_dismiss", code);
     toast.success("Report dismissed");
     refresh();

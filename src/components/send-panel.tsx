@@ -82,7 +82,10 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   const timers = settings.allowed_timers.filter((t) => t <= 86400).sort((a, b) => a - b);
 
   useEffect(() => {
-    if (!image) return setImageUrl(null);
+    if (!image) {
+      setImageUrl(null);
+      return;
+    }
     const u = URL.createObjectURL(image);
     setImageUrl(u);
     return () => URL.revokeObjectURL(u);
@@ -94,13 +97,13 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     if (!value) {
       setCodeState("idle");
       setCodeError(null);
-      return;
+      return undefined;
     }
     const local = validateCustomCode(value, settings.blocked_codes);
     if (local) {
       setCodeState("invalid");
       setCodeError(local);
-      return;
+      return undefined;
     }
     setCodeState("checking");
     const id = setTimeout(async () => {
@@ -400,7 +403,10 @@ function SendSuccess({ code, expiresAt, onReset }: { code: string; expiresAt: st
 
   const remove = async () => {
     const token = takeToken(code);
-    if (!token) return toast.error("This device can't delete that clip.");
+    if (!token) {
+      toast.error("This device can't delete that clip.");
+      return;
+    }
     setDeleting(true);
     const r = await del({ data: { code, token } });
     setDeleting(false);
