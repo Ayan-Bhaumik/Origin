@@ -12,7 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAuditLogRouteImport } from './routes/admin.audit-log'
+import { Route as AdminClipsRouteImport } from './routes/admin.clips'
 import { Route as AdminDashboardRouteImport } from './routes/admin.dashboard'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
+import { Route as AdminSecurityRouteImport } from './routes/admin.security'
+import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as RCodeRouteImport } from './routes/r.$code'
 
@@ -31,9 +36,34 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAuditLogRoute = AdminAuditLogRouteImport.update({
+  id: '/audit-log',
+  path: '/audit-log',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminClipsRoute = AdminClipsRouteImport.update({
+  id: '/clips',
+  path: '/clips',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSecurityRoute = AdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminLoginRoute = AdminLoginRouteImport.update({
@@ -50,14 +80,24 @@ const RCodeRoute = RCodeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/clips': typeof AdminClipsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/clips': typeof AdminClipsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin': typeof AdminIndexRoute
@@ -66,7 +106,12 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin/audit-log': typeof AdminAuditLogRoute
+  '/admin/clips': typeof AdminClipsRoute
   '/admin/dashboard': typeof AdminDashboardRoute
+  '/admin/reports': typeof AdminReportsRoute
+  '/admin/security': typeof AdminSecurityRoute
+  '/admin/settings': typeof AdminSettingsRoute
   '/admin_/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
@@ -76,17 +121,37 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/admin/audit-log'
+    | '/admin/clips'
     | '/admin/dashboard'
+    | '/admin/reports'
+    | '/admin/security'
+    | '/admin/settings'
     | '/admin/login'
     | '/r/$code'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/admin/dashboard' | '/admin/login' | '/r/$code' | '/admin'
+  to:
+    | '/'
+    | '/admin/audit-log'
+    | '/admin/clips'
+    | '/admin/dashboard'
+    | '/admin/reports'
+    | '/admin/security'
+    | '/admin/settings'
+    | '/admin/login'
+    | '/r/$code'
+    | '/admin'
   id:
     | '__root__'
     | '/'
     | '/admin'
+    | '/admin/audit-log'
+    | '/admin/clips'
     | '/admin/dashboard'
+    | '/admin/reports'
+    | '/admin/security'
+    | '/admin/settings'
     | '/admin_/login'
     | '/r/$code'
     | '/admin/'
@@ -122,11 +187,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/audit-log': {
+      id: '/admin/audit-log'
+      path: '/audit-log'
+      fullPath: '/admin/audit-log'
+      preLoaderRoute: typeof AdminAuditLogRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/clips': {
+      id: '/admin/clips'
+      path: '/clips'
+      fullPath: '/admin/clips'
+      preLoaderRoute: typeof AdminClipsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/dashboard': {
       id: '/admin/dashboard'
       path: '/dashboard'
       fullPath: '/admin/dashboard'
       preLoaderRoute: typeof AdminDashboardRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/security': {
+      id: '/admin/security'
+      path: '/security'
+      fullPath: '/admin/security'
+      preLoaderRoute: typeof AdminSecurityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin_/login': {
@@ -147,12 +247,22 @@ declare module '@tanstack/react-router' {
 }
 
 interface AdminRouteChildren {
+  AdminAuditLogRoute: typeof AdminAuditLogRoute
+  AdminClipsRoute: typeof AdminClipsRoute
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminReportsRoute: typeof AdminReportsRoute
+  AdminSecurityRoute: typeof AdminSecurityRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminAuditLogRoute: AdminAuditLogRoute,
+  AdminClipsRoute: AdminClipsRoute,
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminReportsRoute: AdminReportsRoute,
+  AdminSecurityRoute: AdminSecurityRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
