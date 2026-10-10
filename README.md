@@ -19,7 +19,7 @@ AI/ML Engineer · Full-Stack Developer
 
 Text, images and files — no account, no app. Just a short code.
 
-[![Live](https://img.shields.io/badge/Live-origin.app-6366F1?style=flat-square&logoColor=white)](https://origin.app)
+[![Live](https://img.shields.io/badge/Live-origin.ayanbhaumik.in-6366F1?style=flat-square&logoColor=white)](https://origin.ayanbhaumik.in/)
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
 [![Cloudflare](https://img.shields.io/badge/Hosted%20on-Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://cloudflare.com)
 [![Domain from Hostinger](https://img.shields.io/badge/Domain-Hostinger-673DE6?style=flat-square)](https://www.hostinger.com/)
@@ -53,6 +53,29 @@ Text, images and files — no account, no app. Just a short code.
 - **Instant actions** — copy text, copy/download images, download files
 - **Abuse reporting** — built-in report modal for recipients
 - **Clear status messages** — expired, burned, locked, rate-limited — all handled gracefully
+
+### 🧩 Browser Extension
+Send text selections and web images to origin with a single right-click or via the toolbar popup.
+
+[![Chrome](https://img.shields.io/badge/Download-Chrome%20%2F%20Chromium-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.0.0/origin-chrome.zip)
+[![Firefox](https://img.shields.io/badge/Download-Firefox-FF7139?style=flat-square&logo=firefox&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.0.0/origin-firefox.zip)
+
+**Chrome / Brave / Edge:**
+1. Download and extract `origin-chrome.zip`
+2. Go to `chrome://extensions/` and enable **Developer mode** (top right)
+3. Click **Load unpacked** and select the extracted folder
+
+**Firefox:**
+1. Download and extract `origin-firefox.zip`
+2. Go to `about:debugging` → **This Firefox** → **Load Temporary Add-on**
+3. Select any file inside the extracted folder
+
+**Extension features:**
+- Right-click any selected text → **Send to origin**
+- Right-click any image → **Send to origin**
+- Toolbar popup with Send and Retrieve tabs
+- Timer chips, recent history, auto-copy code on send
+- Toast overlay injected into the page after every send
 
 ### PWA
 - Installable on iOS and Android as a standalone app
@@ -93,9 +116,9 @@ Text, images and files — no account, no app. Just a short code.
 | Routing | React Router |
 | Data fetching | TanStack Query |
 | Backend | Supabase (Database + Storage + Auth + Edge Functions) |
+| Extension | Manifest V3 · Vanilla JS · Chrome + Firefox |
 | Hosting | Cloudflare Pages |
 | Domain | Hostinger |
-
 
 ---
 
@@ -189,10 +212,10 @@ Content is temporary and auto-deleted. The site owner can access stored content 
 - [x] Markdown preview + syntax highlighting
 - [x] Read receipts
 - [x] Admin dashboard
+- [x] Browser extension (Chrome + Firefox)
 - [ ] Multi-file upload (zip)
 - [ ] Public API with API keys
 - [ ] Send code by email / SMS
-- [ ] Browser extension
 
 ---
 
