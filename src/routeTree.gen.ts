@@ -20,6 +20,8 @@ import { Route as AdminSecurityRouteImport } from './routes/admin.security'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminLoginRouteImport } from './routes/admin_.login'
 import { Route as RCodeRouteImport } from './routes/r.$code'
+import { Route as ApiPublicClipsRouteImport } from './routes/api/public/clips'
+import { Route as ApiPublicClipsCodeRouteImport } from './routes/api/public/clips.$code'
 import { Route as ApiPublicNotifyTokenRouteImport } from './routes/api/public/notify.$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -77,6 +79,16 @@ const RCodeRoute = RCodeRouteImport.update({
   path: '/r/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicClipsRoute = ApiPublicClipsRouteImport.update({
+  id: '/api/public/clips',
+  path: '/api/public/clips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicClipsCodeRoute = ApiPublicClipsCodeRouteImport.update({
+  id: '/$code',
+  path: '/$code',
+  getParentRoute: () => ApiPublicClipsRoute,
+} as any)
 const ApiPublicNotifyTokenRoute = ApiPublicNotifyTokenRouteImport.update({
   id: '/api/public/notify/$token',
   path: '/api/public/notify/$token',
@@ -95,6 +107,8 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/clips': typeof ApiPublicClipsRouteWithChildren
+  '/api/public/clips/$code': typeof ApiPublicClipsCodeRoute
   '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRoutesByTo {
@@ -108,6 +122,8 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin': typeof AdminIndexRoute
+  '/api/public/clips': typeof ApiPublicClipsRouteWithChildren
+  '/api/public/clips/$code': typeof ApiPublicClipsCodeRoute
   '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRoutesById {
@@ -123,6 +139,8 @@ export interface FileRoutesById {
   '/admin_/login': typeof AdminLoginRoute
   '/r/$code': typeof RCodeRoute
   '/admin/': typeof AdminIndexRoute
+  '/api/public/clips': typeof ApiPublicClipsRouteWithChildren
+  '/api/public/clips/$code': typeof ApiPublicClipsCodeRoute
   '/api/public/notify/$token': typeof ApiPublicNotifyTokenRoute
 }
 export interface FileRouteTypes {
@@ -139,6 +157,8 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/r/$code'
     | '/admin/'
+    | '/api/public/clips'
+    | '/api/public/clips/$code'
     | '/api/public/notify/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -152,6 +172,8 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/r/$code'
     | '/admin'
+    | '/api/public/clips'
+    | '/api/public/clips/$code'
     | '/api/public/notify/$token'
   id:
     | '__root__'
@@ -166,6 +188,8 @@ export interface FileRouteTypes {
     | '/admin_/login'
     | '/r/$code'
     | '/admin/'
+    | '/api/public/clips'
+    | '/api/public/clips/$code'
     | '/api/public/notify/$token'
   fileRoutesById: FileRoutesById
 }
@@ -174,6 +198,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRouteWithChildren
   AdminLoginRoute: typeof AdminLoginRoute
   RCodeRoute: typeof RCodeRoute
+  ApiPublicClipsRoute: typeof ApiPublicClipsRouteWithChildren
   ApiPublicNotifyTokenRoute: typeof ApiPublicNotifyTokenRoute
 }
 
@@ -256,6 +281,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/clips': {
+      id: '/api/public/clips'
+      path: '/api/public/clips'
+      fullPath: '/api/public/clips'
+      preLoaderRoute: typeof ApiPublicClipsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/clips/$code': {
+      id: '/api/public/clips/$code'
+      path: '/$code'
+      fullPath: '/api/public/clips/$code'
+      preLoaderRoute: typeof ApiPublicClipsCodeRouteImport
+      parentRoute: typeof ApiPublicClipsRoute
+    }
     '/api/public/notify/$token': {
       id: '/api/public/notify/$token'
       path: '/api/public/notify/$token'
@@ -288,11 +327,24 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface ApiPublicClipsRouteChildren {
+  ApiPublicClipsCodeRoute: typeof ApiPublicClipsCodeRoute
+}
+
+const ApiPublicClipsRouteChildren: ApiPublicClipsRouteChildren = {
+  ApiPublicClipsCodeRoute: ApiPublicClipsCodeRoute,
+}
+
+const ApiPublicClipsRouteWithChildren = ApiPublicClipsRoute._addFileChildren(
+  ApiPublicClipsRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   AdminLoginRoute: AdminLoginRoute,
   RCodeRoute: RCodeRoute,
+  ApiPublicClipsRoute: ApiPublicClipsRouteWithChildren,
   ApiPublicNotifyTokenRoute: ApiPublicNotifyTokenRoute,
 }
 export const routeTree = rootRouteImport
