@@ -16,7 +16,7 @@ async function sendClip(body) {
   } catch (e) {
     throw new Error("Can't reach origin. Check your connection.");
   }
-  var data = await res.json().catch(function () { return {}; });
+  var data = await res.json().catch(function () { return { error: "origin isn't responding as expected (status " + res.status + "). Make sure the latest version of the site is published." }; });
   if (!res.ok) throw new Error(data.error || "Something went wrong.");
   return data;
 }
@@ -25,7 +25,7 @@ async function getClip(code, pin) {
   var url = API + "/" + encodeURIComponent(code.trim()) + (pin ? "?pin=" + encodeURIComponent(pin) : "");
   var res;
   try { res = await fetch(url); } catch (e) { throw new Error("Can't reach origin. Check your connection."); }
-  var data = await res.json().catch(function () { return {}; });
+  var data = await res.json().catch(function () { return { error: "origin isn't responding as expected (status " + res.status + "). Make sure the latest version of the site is published." }; });
   if (!res.ok) { var err = new Error(data.error || "Something went wrong."); err.code = data.code; err.remaining = data.remaining; throw err; }
   return data;
 }
