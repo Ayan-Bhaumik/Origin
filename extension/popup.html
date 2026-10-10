@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>origin</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <span class="wordmark">origin<span class="dot">.</span></span>
+    <a class="gear" href="https://origin.ayanbhaumik.in" target="_blank" rel="noopener" title="Open origin" aria-label="Open origin">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    </a>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-send" class="tab active" aria-selected="true">Send</button>
+    <button role="tab" id="tab-retrieve" class="tab" aria-selected="false">Retrieve</button>
+  </nav>
+
+  <section id="panel-send">
+    <div id="send-form">
+      <textarea id="text" placeholder="Paste or type anything…" rows="5" maxlength="100000"></textarea>
+      <div class="chips" id="chips"></div>
+      <button id="send" class="primary">Send</button>
+      <p id="send-error" class="error" hidden></p>
+    </div>
+    <div id="send-done" hidden>
+      <p class="muted center">Your code</p>
+      <p id="done-code" class="big-code"></p>
+      <p id="done-copied" class="muted center small">Copied to clipboard</p>
+      <div class="row">
+        <button id="copy-code" class="secondary">Copy Code</button>
+        <button id="open-link" class="secondary">Open Link</button>
+      </div>
+      <button id="send-another" class="ghost">Send another</button>
+    </div>
+    <div id="recent-wrap" hidden>
+      <h2>Recent</h2>
+      <ul id="recent"></ul>
+    </div>
+  </section>
+
+  <section id="panel-retrieve" hidden>
+    <input id="code" class="code-input" placeholder="ABC234" maxlength="20" autocomplete="off" spellcheck="false" />
+    <input id="pin" class="pin-input" placeholder="PIN" inputmode="numeric" maxlength="8" hidden />
+    <button id="retrieve" class="primary">Retrieve</button>
+    <p id="retrieve-error" class="error" hidden></p>
+    <div id="result" hidden></div>
+  </section>
+
+  <script src="shared.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
