@@ -1,0 +1,51 @@
+* { box-sizing: border-box; }
+body {
+  width: 360px; margin: 0; padding: 14px 16px 16px;
+  background: #0A0A0A; color: #F9FAFB;
+  font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+[hidden] { display: none !important; }
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.wordmark { font-weight: 600; font-size: 17px; letter-spacing: -0.02em; }
+.dot { color: #6366F1; }
+.gear { color: #9CA3AF; display: inline-flex; padding: 6px; border-radius: 8px; }
+.gear:hover { color: #F9FAFB; background: #111111; }
+.tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 3px; background: #111111; border: 1px solid #1F2937; border-radius: 10px; margin-bottom: 12px; }
+.tab { background: transparent; border: 0; color: #9CA3AF; padding: 7px; border-radius: 7px; font: inherit; font-weight: 500; cursor: pointer; }
+.tab.active { background: #1F2937; color: #F9FAFB; }
+textarea, input {
+  width: 100%; background: #111111; color: #F9FAFB; border: 1px solid #1F2937; border-radius: 10px;
+  padding: 10px 12px; font: inherit; outline: none; resize: vertical;
+}
+textarea:focus, input:focus { border-color: #6366F1; box-shadow: 0 0 0 3px rgba(99,102,241,.25); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
+.chip { background: #111111; color: #D1D5DB; border: 1px solid #1F2937; border-radius: 999px; padding: 4px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+.chip.active { background: rgba(99,102,241,.15); border-color: #6366F1; color: #F9FAFB; }
+button.primary { width: 100%; background: #6366F1; color: #FFFFFF; border: 0; border-radius: 10px; padding: 10px; font: inherit; font-weight: 600; cursor: pointer; }
+button.primary:hover { background: #5458E8; }
+button.primary[aria-busy="true"] { opacity: .7; cursor: progress; }
+button.secondary { flex: 1; background: #111111; color: #F9FAFB; border: 1px solid #1F2937; border-radius: 10px; padding: 9px; font: inherit; font-weight: 500; cursor: pointer; }
+button.secondary:hover { border-color: #374151; }
+button.ghost { width: 100%; background: transparent; color: #9CA3AF; border: 0; padding: 8px; margin-top: 4px; font: inherit; cursor: pointer; }
+button.ghost:hover { color: #F9FAFB; }
+.row { display: flex; gap: 8px; margin-top: 10px; }
+.error { color: #F87171; font-size: 13px; margin: 8px 0 0; }
+.muted { color: #9CA3AF; margin: 0; }
+.small { font-size: 12px; }
+.center { text-align: center; }
+.big-code, .code-input { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .12em; }
+.big-code { font-size: 32px; font-weight: 600; text-align: center; margin: 4px 0; color: #F9FAFB; }
+.code-input { font-size: 22px; text-align: center; text-transform: uppercase; margin-bottom: 8px; }
+.pin-input { text-align: center; letter-spacing: .2em; margin-bottom: 8px; }
+h2 { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: #9CA3AF; margin: 18px 0 6px; }
+ul { list-style: none; padding: 0; margin: 0; border: 1px solid #1F2937; border-radius: 10px; overflow: hidden; }
+li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: #111111; }
+li + li { border-top: 1px solid #1F2937; }
+li .ico { color: #818CF8; width: 16px; text-align: center; }
+li .c { font-family: "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em; font-weight: 600; }
+li .left { margin-left: auto; color: #9CA3AF; font-size: 12px; }
+li button { background: transparent; border: 1px solid #1F2937; color: #D1D5DB; border-radius: 6px; padding: 2px 8px; font: inherit; font-size: 12px; cursor: pointer; }
+#result { margin-top: 12px; }
+.text-box { white-space: pre-wrap; word-break: break-word; background: #111111; border: 1px solid #1F2937; border-radius: 10px; padding: 10px 12px; max-height: 220px; overflow: auto; font-size: 13px; }
+.thumb { display: block; max-width: 100%; max-height: 220px; margin: 0 auto; border-radius: 10px; border: 1px solid #1F2937; }
+.meta { font-size: 12px; color: #9CA3AF; margin: 6px 0 0; }
