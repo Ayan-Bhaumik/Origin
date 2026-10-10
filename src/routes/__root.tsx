@@ -83,6 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "origin — move anything between your devices" },
       { name: "description", content: "A free, anonymous online clipboard for text, images and files." },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "origin" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0A0A0A" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
