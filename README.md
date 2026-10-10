@@ -1,15 +1,29 @@
 <div align="center">
 
+### Created by
+
+# Ayan Bhaumik
+
+AI/ML Engineer · Full-Stack Developer
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-ayanbhaumik.in-6366F1?style=flat-square)](https://ayanbhaumik.in/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-ayan--bhaumik-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ayan-bhaumik/)
+[![GitHub](https://img.shields.io/badge/GitHub-Ayan--Bhaumik-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Ayan-Bhaumik)
+[![Scholar](https://img.shields.io/badge/Google%20Scholar-Publications-4285F4?style=flat-square&logo=googlescholar&logoColor=white)](https://scholar.google.com/citations?user=ArGuUjgAAAAJ&hl=en)
+[![Email](https://img.shields.io/badge/Email-connect@mrayanbhaumik.in-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:connect@mrayanbhaumik.in)
+
+---
+
 # origin.
 
 **Move anything between your devices, instantly.**
 
 Text, images and files — no account, no app. Just a short code.
 
-[![Live](https://img.shields.io/badge/Live-origin.ayanbhaumik.in-6366F1?style=flat-square&logoColor=white)](https://origin.ayanbhaumik.in/)
-[![Built with Lovable](https://img.shields.io/badge/Built%20with-Lovable-ff69b4?style=flat-square)](https://lovable.dev)
-[![Hosted on Cloudflare](https://img.shields.io/badge/Hosted%20on-Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://cloudflare.com)
+[![Live](https://img.shields.io/badge/Live-origin.app-6366F1?style=flat-square&logoColor=white)](https://origin.app)
 [![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![Cloudflare](https://img.shields.io/badge/Hosted%20on-Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://cloudflare.com)
+[![Domain from Hostinger](https://img.shields.io/badge/Domain-Hostinger-673DE6?style=flat-square)](https://www.hostinger.com/)
 
 </div>
 
@@ -24,7 +38,7 @@ Text, images and files — no account, no app. Just a short code.
 ## Features
 
 ### Sending Clips
-- **Three content types** — Text (200 KB), Images (20 MB), Files (20 MB)
+- **Three content types** — Text (100 KB), Images (10 MB), Files (25 MB)
 - **Paste & drop anywhere** — paste screenshots or drag files directly onto the dropzone
 - **Auto-generated codes** — clean 6-character codes, no confusing characters (`0`, `O`, `1`, `I`, `L`)
 - **Custom codes** — 4–20 characters with live availability check and reserved word blocking
@@ -82,8 +96,7 @@ Text, images and files — no account, no app. Just a short code.
 | Backend | Supabase (Database + Storage + Auth + Edge Functions) |
 | Hosting | Cloudflare Pages |
 | Domain | Hostinger |
-| AI | Claude (Anthropic) |
-| Builder | Lovable |
+
 
 ---
 
@@ -164,7 +177,7 @@ any file.                or scan the QR.          content.
 
 ## Privacy
 
-Content is temporary and auto-deleted. The site owner can access stored content via the admin panel. Do not share sensitive or personal information. Visit counts use session tracking only — no personal data is stored.
+Content is temporary and auto-deleted. The site owner can access stored content via the admin panel. Do not share sensitive or personal information.
 
 ---
 
@@ -179,25 +192,13 @@ Content is temporary and auto-deleted. The site owner can access stored content 
 - [x] Admin dashboard
 - [ ] Multi-file upload (zip)
 - [ ] Public API with API keys
-- [ ] Send code by email/SMS
+- [ ] Send code by email / SMS
 - [ ] Browser extension
-
----
-
-## Author
-
-**Ayan Bhaumik** — AI/ML Engineer & Full-Stack Developer
-
-[![Portfolio](https://img.shields.io/badge/Portfolio-ayanbhaumik.in-6366F1?style=flat-square)](https://ayanbhaumik.in/)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-ayan--bhaumik-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ayan-bhaumik/)
-[![GitHub](https://img.shields.io/badge/GitHub-Ayan--Bhaumik-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Ayan-Bhaumik)
-[![Scholar](https://img.shields.io/badge/Google%20Scholar-Publications-4285F4?style=flat-square&logo=googlescholar&logoColor=white)](https://scholar.google.com/citations?user=ArGuUjgAAAAJ&hl=en)
-[![Email](https://img.shields.io/badge/Email-connect@mrayanbhaumik.in-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:connect@mrayanbhaumik.in)
 
 ---
 
 <div align="center">
 
-Built with [Claude](https://anthropic.com) · [Lovable](https://lovable.dev) · [Supabase](https://supabase.com) · Hosted on [Cloudflare](https://cloudflare.com) · Domain via [Hostinger](https://hostinger.com)
+Built with [Supabase](https://supabase.com) · Hosted on [Cloudflare](https://cloudflare.com) · Domain via [Hostinger](https://hostinger.com)
 
 </div>
