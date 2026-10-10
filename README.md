@@ -1,9 +1,7 @@
 <div align="center">
-
 ### Created by
 
 # Ayan Bhaumik
-
 AI/ML Engineer · Full-Stack Developer
 
 [![Portfolio](https://img.shields.io/badge/Portfolio-ayanbhaumik.in-6366F1?style=flat-square)](https://ayanbhaumik.in/)
