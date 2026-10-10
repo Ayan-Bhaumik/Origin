@@ -120,7 +120,7 @@ export async function createClipCore(data: CreateInput) {
     return { ok: true as const, code: code.toUpperCase(), deleteToken, expiresAt, notifyToken };
 }
 
-export export type RetrieveResult =
+export type RetrieveResult =
   | { status: "ok"; type: "text" | "image" | "file"; content: string | null; url: string | null; fileName: string | null; fileMime: string | null; fileSize: number | null; expiresAt: string; burned: boolean; code: string }
   | { status: "pin_required" }
   | { status: "wrong_pin"; remaining: number }
