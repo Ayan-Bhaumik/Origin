@@ -15,7 +15,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { checkCodeAvailable, createClip, createUploadUrl, deleteOwnClip, getReceipt } from "@/lib/clips.functions";
 import { RecentClips, forgetClip, rememberClip } from "@/components/recent-clips";
 import { useOnline } from "@/hooks/use-online";
-import { formatBytes, isSafeNotifyUrl, timerLabel, validateCustomCode, validatePin } from "@/lib/clip-rules";
+import {
+  MAX_FILES_PER_CLIP,
+  MAX_IMAGES_PER_CLIP,
+  MAX_TOTAL_FILE_BYTES,
+  formatBytes,
+  isSafeNotifyUrl,
+  timerLabel,
+  validateCustomCode,
+  validateFileBatch,
+  validatePin,
+} from "@/lib/clip-rules";
 import { useCountdown } from "@/hooks/use-countdown";
 import { cn } from "@/lib/utils";
 
@@ -64,9 +74,8 @@ function dropToken(code: string) {
 export function SendPanel({ settings }: { settings: PublicSettings }) {
   const [kind, setKind] = useState<Kind>("text");
   const [text, setText] = useState("");
-  const [image, setImage] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [file, setFile] = useState<File | null>(null);
+  const [images, setImages] = useState<File[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
   const [customCode, setCustomCode] = useState("");
   const [codeState, setCodeState] = useState<"idle" | "checking" | "available" | "taken" | "invalid">("idle");
   const [codeError, setCodeError] = useState<string | null>(null);
@@ -76,6 +85,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   const [notify, setNotify] = useState(false);
   const [notifyUrl, setNotifyUrl] = useState("");
   const [sending, setSending] = useState(false);
+  const [progress, setProgress] = useState("");
   const [result, setResult] = useState<{ code: string; expiresAt: string; notifyToken: string | null } | null>(null);
   const online = useOnline();
 
@@ -85,16 +95,6 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
 
   const textBytes = new TextEncoder().encode(text).length;
   const timers = settings.allowed_timers.filter((t) => t <= 86400).sort((a, b) => a - b);
-
-  useEffect(() => {
-    if (!image) {
-      setImageUrl(null);
-      return;
-    }
-    const u = URL.createObjectURL(image);
-    setImageUrl(u);
-    return () => URL.revokeObjectURL(u);
-  }, [image]);
 
   // Debounced availability check
   useEffect(() => {
@@ -124,31 +124,54 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     return () => clearTimeout(id);
   }, [customCode, settings.blocked_codes, check]);
 
-  const acceptImage = (f: File) => {
-    if (!f.type.startsWith("image/")) {
-      toast.error("Only images can go here.");
-    } else if (f.size > settings.max_image_bytes) {
-      toast.error(`Images must be under ${formatBytes(settings.max_image_bytes)}.`);
-    } else {
-      setImage(f);
-      setKind("image");
+  const addImages = (incoming: File[]) => {
+    const next = [...images];
+    for (const f of incoming) {
+      if (!f.type.startsWith("image/")) {
+        toast.error("Only images can go here.");
+      } else if (f.size > settings.max_image_bytes) {
+        toast.error(`"${f.name || "Pasted image"}" is over ${formatBytes(settings.max_image_bytes)}.`);
+      } else if (next.length >= MAX_IMAGES_PER_CLIP) {
+        toast.error(`Up to ${MAX_IMAGES_PER_CLIP} images per clip.`);
+        break;
+      } else {
+        next.push(f);
+      }
     }
+    if (next.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_FILE_BYTES) {
+      toast.error(`Total size must be under ${formatBytes(MAX_TOTAL_FILE_BYTES)}.`);
+      return;
+    }
+    setImages(next);
+    setKind("image");
   };
-  const acceptFile = (f: File) => {
-    if (f.size > settings.max_file_bytes) {
-      toast.error(`Files must be under ${formatBytes(settings.max_file_bytes)}.`);
-    } else {
-      setFile(f);
-      setKind("file");
+
+  const addFiles = (incoming: File[]) => {
+    const next = [...files];
+    for (const f of incoming) {
+      if (f.size > settings.max_file_bytes) {
+        toast.error(`"${f.name || "File"}" is over ${formatBytes(settings.max_file_bytes)}.`);
+      } else if (next.length >= MAX_FILES_PER_CLIP) {
+        toast.error(`Up to ${MAX_FILES_PER_CLIP} files per clip.`);
+        break;
+      } else {
+        next.push(f);
+      }
     }
+    if (next.reduce((s, f) => s + f.size, 0) > MAX_TOTAL_FILE_BYTES) {
+      toast.error(`Total size must be under ${formatBytes(MAX_TOTAL_FILE_BYTES)}.`);
+      return;
+    }
+    setFiles(next);
+    setKind("file");
   };
 
   const onPaste = (e: ClipboardEvent<HTMLDivElement>) => {
     const items = Array.from(e.clipboardData.items);
-    const img = items.find((i) => i.type.startsWith("image/"))?.getAsFile();
-    if (img) {
+    const imgs = items.filter((i) => i.type.startsWith("image/")).map((i) => i.getAsFile()).filter((f): f is File => !!f);
+    if (imgs.length) {
       e.preventDefault();
-      acceptImage(img);
+      addImages(imgs);
       return;
     }
     const target = e.target as HTMLElement;
@@ -161,48 +184,62 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     }
   };
 
+  const picked = kind === "image" ? images : kind === "file" ? files : [];
+  const pickedBytes = picked.reduce((s, f) => s + f.size, 0);
+  const batchOk =
+    kind === "text" ||
+    validateFileBatch(kind, picked.map((f) => ({ name: f.name, mime: f.type, size: f.size })), settings) === null;
+
   const notifyUrlBad = notify && !!notifyUrl.trim() && !isSafeNotifyUrl(notifyUrl.trim());
   const canSend =
     online &&
     !notifyUrlBad &&
     !settings.maintenance_mode &&
     !sending &&
+    batchOk &&
     codeState !== "taken" &&
     codeState !== "invalid" &&
     codeState !== "checking" &&
     (!pin || !validatePin(pin)) &&
     ((kind === "text" && text.trim().length > 0 && textBytes <= settings.max_text_bytes) ||
-      (kind === "image" && !!image) ||
-      (kind === "file" && !!file));
+      (kind === "image" && images.length > 0) ||
+      (kind === "file" && files.length > 0));
 
   const send = async () => {
     if (!canSend) return;
     setSending(true);
     try {
-      let filePath: string | undefined;
-      let fileName: string | undefined;
-      let fileMime: string | undefined;
-      const f = kind === "image" ? image : kind === "file" ? file : null;
-      if (f) {
+      const batch = kind === "image" ? images : kind === "file" ? files : [];
+      const uploaded: { path: string; name: string; mime: string; size: number }[] = [];
+      for (let i = 0; i < batch.length; i++) {
+        const f = batch[i];
+        setProgress(batch.length > 1 ? `Uploading ${i + 1} of ${batch.length}…` : "");
         const u = await upload({
-          data: { kind: kind as "image" | "file", fileName: f.name || "pasted.png", size: f.size, mime: f.type || "application/octet-stream" },
+          data: {
+            kind: kind as "image" | "file",
+            fileName: f.name || (kind === "image" ? "pasted.png" : "file"),
+            size: f.size,
+            mime: f.type || "application/octet-stream",
+          },
         });
         if (!u.ok) throw new Error(u.error);
         const { error } = await supabase.storage.from("clips-files").uploadToSignedUrl(u.path, u.token, f, {
           contentType: f.type || "application/octet-stream",
         });
         if (error) throw new Error("Upload failed. Please try again.");
-        filePath = u.path;
-        fileName = f.name || "pasted.png";
-        fileMime = f.type || "application/octet-stream";
+        uploaded.push({
+          path: u.path,
+          name: f.name || (kind === "image" ? "pasted.png" : "file"),
+          mime: f.type || "application/octet-stream",
+          size: f.size,
+        });
       }
+      setProgress("");
       const r = await create({
         data: {
           type: kind,
           content: kind === "text" ? text : undefined,
-          filePath,
-          fileName,
-          fileMime,
+          files: uploaded.length ? uploaded : undefined,
           customCode: customCode.trim() || undefined,
           pin: pin || undefined,
           burnAfterRead: burn,
@@ -219,6 +256,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     } catch (e) {
       toast.error(errMsg((e as Error).message));
     } finally {
+      setProgress("");
       setSending(false);
     }
   };
@@ -226,8 +264,8 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   const reset = () => {
     setResult(null);
     setText("");
-    setImage(null);
-    setFile(null);
+    setImages([]);
+    setFiles([]);
     setCustomCode("");
     setPin("");
     setBurn(false);
@@ -298,30 +336,48 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
       )}
 
       {kind === "image" &&
-        (image && imageUrl ? (
-          <div className="relative overflow-hidden rounded-lg border bg-muted">
-            <img src={imageUrl} alt="Selected preview" className="mx-auto max-h-56 object-contain" />
-            <Button variant="secondary" size="icon" className="absolute right-2 top-2" onClick={() => setImage(null)} aria-label="Remove image">
-              <X />
-            </Button>
-            <p className="border-t bg-card px-3 py-2 text-xs text-muted-foreground">{image.name || "Pasted image"} · {formatBytes(image.size)}</p>
+        (images.length ? (
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {images.map((f, i) => (
+                <ImageThumb key={`${f.name}-${f.size}-${i}`} file={f} onRemove={() => setImages(images.filter((_, j) => j !== i))} />
+              ))}
+            </div>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs tabular-nums text-muted-foreground">
+                {images.length}/{MAX_IMAGES_PER_CLIP} images · {formatBytes(pickedBytes)} / {formatBytes(MAX_TOTAL_FILE_BYTES)} total
+              </p>
+              {images.length < MAX_IMAGES_PER_CLIP && <AddMoreButton accept="image/*" label="Add images" multiple onFiles={addImages} />}
+            </div>
           </div>
         ) : (
-          <DropZone accept="image/*" hint={`PNG, JPG, GIF, WebP · up to ${formatBytes(settings.max_image_bytes)} · or paste`} onFile={acceptImage} />
+          <DropZone accept="image/*" multiple hint={`Up to ${MAX_IMAGES_PER_CLIP} images · ${formatBytes(settings.max_image_bytes)} each · or paste`} onFiles={addImages} />
         ))}
 
       {kind === "file" &&
-        (file ? (
-          <div className="flex items-center gap-3 rounded-lg border p-3">
-            <div className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground"><FileIcon className="size-5" /></div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{file.name}</p>
-              <p className="text-xs text-muted-foreground">{formatBytes(file.size)}</p>
+        (files.length ? (
+          <div className="flex flex-col gap-3">
+            <ul className="flex flex-col gap-2">
+              {files.map((f, i) => (
+                <li key={`${f.name}-${f.size}-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground"><FileIcon className="size-5" /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{f.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatBytes(f.size)}</p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setFiles(files.filter((_, j) => j !== i))} aria-label={`Remove ${f.name}`}><X /></Button>
+                </li>
+              ))}
+            </ul>
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs tabular-nums text-muted-foreground">
+                {files.length}/{MAX_FILES_PER_CLIP} files · {formatBytes(pickedBytes)} / {formatBytes(MAX_TOTAL_FILE_BYTES)} total
+              </p>
+              {files.length < MAX_FILES_PER_CLIP && <AddMoreButton label="Add files" multiple onFiles={addFiles} />}
             </div>
-            <Button variant="ghost" size="icon" onClick={() => setFile(null)} aria-label="Remove file"><X /></Button>
           </div>
         ) : (
-          <DropZone hint={`Any file · up to ${formatBytes(settings.max_file_bytes)}`} onFile={acceptFile} />
+          <DropZone multiple hint={`Up to ${MAX_FILES_PER_CLIP} files · ${formatBytes(settings.max_file_bytes)} each`} onFiles={addFiles} />
         ))}
 
       <Collapsible>
@@ -414,7 +470,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
       </div>
 
       <Button size="lg" className="h-12 w-full text-base active:scale-[0.99]" disabled={!canSend} onClick={send}>
-        {!online ? "You're offline" : settings.maintenance_mode ? "Sending paused for maintenance" : sending ? "Sending…" : "Send"}
+        {!online ? "You're offline" : settings.maintenance_mode ? "Sending paused for maintenance" : sending ? progress || "Sending…" : "Send"}
       </Button>
 
       <RecentClips />
@@ -422,14 +478,54 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
   );
 }
 
-function DropZone({ accept, hint, onFile }: { accept?: string; hint: string; onFile: (f: File) => void }) {
+function ImageThumb({ file, onRemove }: { file: File; onRemove: () => void }) {
+  const [url, setUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const u = URL.createObjectURL(file);
+    setUrl(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  return (
+    <div className="relative overflow-hidden rounded-lg border bg-muted">
+      {url && <img src={url} alt={file.name || "Selected image"} className="h-24 w-full object-cover" />}
+      <Button variant="secondary" size="icon" className="absolute right-1 top-1 size-7" onClick={onRemove} aria-label={`Remove ${file.name || "image"}`}>
+        <X className="size-3.5" />
+      </Button>
+    </div>
+  );
+}
+
+function AddMoreButton({ accept, label, multiple, onFiles }: { accept?: string; label: string; multiple?: boolean; onFiles: (fs: File[]) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <>
+      <Button type="button" variant="outline" size="sm" onClick={() => input.current?.click()}>
+        <Upload /> {label}
+      </Button>
+      <input
+        ref={input}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className="hidden"
+        onChange={(e) => {
+          const fs = Array.from(e.target.files ?? []);
+          if (fs.length) onFiles(fs);
+          e.target.value = "";
+        }}
+      />
+    </>
+  );
+}
+
+function DropZone({ accept, hint, multiple, onFiles }: { accept?: string; hint: string; multiple?: boolean; onFiles: (fs: File[]) => void }) {
   const [active, setActive] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const onDrop = (e: DragEvent) => {
     e.preventDefault();
     setActive(false);
-    const f = e.dataTransfer.files[0];
-    if (f) onFile(f);
+    const fs = Array.from(e.dataTransfer.files);
+    if (fs.length) onFiles(fs);
   };
   return (
     <button
@@ -451,10 +547,11 @@ function DropZone({ accept, hint, onFile }: { accept?: string; hint: string; onF
         ref={input}
         type="file"
         accept={accept}
+        multiple={multiple}
         className="hidden"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) onFile(f);
+          const fs = Array.from(e.target.files ?? []);
+          if (fs.length) onFiles(fs);
           e.target.value = "";
         }}
       />

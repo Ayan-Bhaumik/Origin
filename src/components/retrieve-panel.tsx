@@ -170,13 +170,14 @@ function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
   const { label, expired } = useCountdown(clip.expiresAt);
   const isMd = clip.type === "text" && looksLikeMarkdown(clip.content ?? "");
   const [mode, setMode] = useState<"raw" | "preview">(isMd ? "preview" : "raw");
+  const first = clip.files[0] ?? null;
   const copyText = async () => {
     await navigator.clipboard.writeText(clip.content ?? "");
     toast.success("Copied to clipboard");
   };
   const copyImage = async () => {
     try {
-      const blob = await (await fetch(clip.url!)).blob();
+      const blob = await (await fetch(first!.url!)).blob();
       const png = blob.type === "image/png" ? blob : await toPng(blob);
       await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
       toast.success("Image copied");
@@ -184,16 +185,23 @@ function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
       toast.error("Couldn't copy the image. Try downloading it instead.");
     }
   };
-  const download = async () => {
+  const download = async (f: { url: string | null; name: string }) => {
+    if (!f.url) return;
     try {
-      const blob = await (await fetch(clip.url!)).blob();
+      const blob = await (await fetch(f.url)).blob();
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = clip.fileName ?? "download";
+      a.download = f.name || "download";
       a.click();
       URL.revokeObjectURL(a.href);
     } catch {
       toast.error("Download link expired. Retrieve the clip again.");
+    }
+  };
+  const downloadAll = async () => {
+    for (const f of clip.files) {
+      await download(f);
+      await new Promise((r) => setTimeout(r, 400));
     }
   };
 
@@ -229,29 +237,76 @@ function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
         </>
       )}
 
-      {clip.type === "image" && clip.url && (
-        <>
-          <div className="overflow-hidden rounded-lg border bg-muted">
-            <img src={clip.url} alt={clip.fileName ?? "Shared image"} className="mx-auto max-h-80 object-contain" />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" onClick={download}><Download /> Download</Button>
-            <Button onClick={copyImage}><Copy /> Copy Image</Button>
-          </div>
-        </>
+      {clip.type === "image" && first && (
+        clip.files.length === 1 ? (
+          <>
+            <div className="overflow-hidden rounded-lg border bg-muted">
+              <img src={first.url ?? ""} alt={first.name || "Shared image"} className="mx-auto max-h-80 object-contain" />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <Button variant="outline" onClick={() => download(first)}><Download /> Download</Button>
+              <Button onClick={copyImage}><Copy /> Copy Image</Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-2">
+              {clip.files.map((f, i) => (
+                <figure key={i} className="overflow-hidden rounded-lg border bg-muted">
+                  {f.url && <img src={f.url} alt={f.name || "Shared image"} loading="lazy" className="h-40 w-full object-cover" />}
+                  <figcaption className="flex items-center justify-between gap-2 border-t bg-card px-2.5 py-1.5 text-xs">
+                    <span className="truncate text-muted-foreground" title={f.name}>{f.name || `Image ${i + 1}`}</span>
+                    {f.url && (
+                      <a href={f.url} download={f.name || true} className="shrink-0 font-medium underline-offset-4 hover:underline">
+                        Save
+                      </a>
+                    )}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+            <Button variant="outline" onClick={downloadAll} disabled={clip.files.some((f) => !f.url)}>
+              <Download /> Download all ({clip.files.length})
+            </Button>
+          </>
+        )
       )}
 
-      {clip.type === "file" && (
-        <>
-          <div className="flex items-center gap-3 rounded-lg border p-3">
-            <div className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground"><FileIcon className="size-5" /></div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">{clip.fileName}</p>
-              <p className="text-xs text-muted-foreground">{formatBytes(clip.fileSize ?? 0)}</p>
+      {clip.type === "file" && first && (
+        clip.files.length === 1 ? (
+          <>
+            <div className="flex items-center gap-3 rounded-lg border p-3">
+              <div className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground"><FileIcon className="size-5" /></div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">{first.name}</p>
+                <p className="text-xs text-muted-foreground">{formatBytes(first.size)}</p>
+              </div>
             </div>
-          </div>
-          <Button onClick={download}><Download /> Download</Button>
-        </>
+            <Button onClick={() => download(first)}><Download /> Download</Button>
+          </>
+        ) : (
+          <>
+            <ul className="flex flex-col gap-2">
+              {clip.files.map((f, i) => (
+                <li key={i} className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="grid size-10 place-items-center rounded-md bg-accent text-accent-foreground"><FileIcon className="size-5" /></div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{f.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatBytes(f.size)}</p>
+                  </div>
+                  {f.url && (
+                    <Button asChild variant="outline" size="sm">
+                      <a href={f.url} download={f.name || true}><Download /> Save</a>
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+            <Button variant="outline" onClick={downloadAll} disabled={clip.files.some((f) => !f.url)}>
+              <Download /> Download all ({clip.files.length})
+            </Button>
+          </>
+        )
       )}
 
       <div className="flex items-center justify-between pt-1">
