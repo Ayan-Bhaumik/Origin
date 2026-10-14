@@ -5,6 +5,9 @@ export const AUTO_CODE_LENGTH = 6;
 export const HARD_MAX_TIMER_SECONDS = 86400;
 export const MAX_PIN_ATTEMPTS = 5;
 export const LOCK_MINUTES = 15;
+export const MAX_IMAGES_PER_CLIP = 20;
+export const MAX_FILES_PER_CLIP = 20;
+export const MAX_TOTAL_FILE_BYTES = 100 * 1024 * 1024; // 100 MB total per clip
 
 export const DEFAULT_SETTINGS = {
   default_timer_seconds: 3600,
@@ -84,6 +87,31 @@ export function mimeAllowed(mime: string, allowlist: string[]) {
   return allowlist.some((rule) =>
     rule.endsWith("/*") ? mime.startsWith(rule.slice(0, -1)) : mime === rule,
   );
+}
+
+export type BatchFile = { name: string; mime: string; size: number };
+
+/** Validates a batch of attachments before upload. Returns an error message or null. */
+export function validateFileBatch(
+  kind: "image" | "file",
+  files: BatchFile[],
+  settings: Pick<AppSettings, "max_image_bytes" | "max_file_bytes">,
+): string | null {
+  if (!files.length) return "Add at least one file.";
+  const max = kind === "image" ? settings.max_image_bytes : settings.max_file_bytes;
+  let total = 0;
+  for (const f of files) {
+    if (f.size > max) return `Each ${kind === "image" ? "image" : "file"} must be under ${formatBytes(max)}.`;
+    total += f.size;
+  }
+  if (total > MAX_TOTAL_FILE_BYTES) return `Total size must be under ${formatBytes(MAX_TOTAL_FILE_BYTES)}.`;
+  if (kind === "image") {
+    if (files.length > MAX_IMAGES_PER_CLIP) return `Up to ${MAX_IMAGES_PER_CLIP} images per clip.`;
+    if (files.some((f) => !f.mime.startsWith("image/"))) return "Only images can go here.";
+  } else if (files.length > MAX_FILES_PER_CLIP) {
+    return `Up to ${MAX_FILES_PER_CLIP} files per clip.`;
+  }
+  return null;
 }
 
 /** Heuristic: content looks like markdown (headings, bold, list items, code fences). */

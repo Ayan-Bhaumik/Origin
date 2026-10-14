@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   CODE_ALPHABET,
+  DEFAULT_SETTINGS,
+  MAX_FILES_PER_CLIP,
+  MAX_IMAGES_PER_CLIP,
+  MAX_TOTAL_FILE_BYTES,
   generateCode,
   isAllowedTimer,
   maxExtendedExpiry,
   validateCustomCode,
+  validateFileBatch,
   validatePin,
-  DEFAULT_SETTINGS,
 } from "./clip-rules";
 
 describe("clip rules", () => {
@@ -48,5 +52,34 @@ describe("clip rules", () => {
   it("admin extension caps at 24h after creation", () => {
     const created = new Date("2026-01-01T00:00:00Z");
     expect(maxExtendedExpiry(created).toISOString()).toBe("2026-01-02T00:00:00.000Z");
+  });
+
+  it("batches allow up to 20 images and 20 files per clip", () => {
+    expect(MAX_IMAGES_PER_CLIP).toBe(20);
+    expect(MAX_FILES_PER_CLIP).toBe(20);
+    const imgs = (n: number, size = 1024) =>
+      Array.from({ length: n }, (_, i) => ({ name: `img${i}.png`, mime: "image/png", size }));
+    expect(validateFileBatch("image", imgs(21), DEFAULT_SETTINGS)).not.toBeNull();
+    expect(validateFileBatch("image", imgs(20), DEFAULT_SETTINGS)).toBeNull();
+    expect(validateFileBatch("file", imgs(21), DEFAULT_SETTINGS)).not.toBeNull();
+    expect(validateFileBatch("file", imgs(20), DEFAULT_SETTINGS)).toBeNull();
+    expect(validateFileBatch("image", [], DEFAULT_SETTINGS)).not.toBeNull();
+  });
+
+  it("batches cap total size at 100 MB and keep per-file limits", () => {
+    expect(MAX_TOTAL_FILE_BYTES).toBe(100 * 1024 * 1024);
+    // 5 × 25 MB files pass the per-file check but blow the 100 MB total.
+    const big = Array.from({ length: 5 }, (_, i) => ({
+      name: `f${i}.zip`,
+      mime: "application/zip",
+      size: 25 * 1024 * 1024,
+    }));
+    expect(validateFileBatch("file", big, DEFAULT_SETTINGS)).not.toBeNull();
+    expect(
+      validateFileBatch("file", [{ name: "big.zip", mime: "application/zip", size: 26 * 1024 * 1024 }], DEFAULT_SETTINGS),
+    ).not.toBeNull();
+    expect(
+      validateFileBatch("image", [{ name: "a.txt", mime: "text/plain", size: 10 }], DEFAULT_SETTINGS),
+    ).not.toBeNull();
   });
 });

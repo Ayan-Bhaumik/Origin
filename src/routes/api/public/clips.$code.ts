@@ -20,6 +20,7 @@ export const Route = createFileRoute("/api/public/clips/$code")({
           code: r.code,
           type: r.type,
           content: r.content,
+          files: r.files.map((f) => ({ url: f.url, name: f.name, mime: f.mime, size: f.size })),
           fileUrl: r.url,
           fileName: r.fileName,
           fileMime: r.fileMime,

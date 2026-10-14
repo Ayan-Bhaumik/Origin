@@ -4,12 +4,16 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { BUCKET, guard, loadSettings, randomToken, sha256, sweep } from "./clips.server";
 import {
   LOCK_MINUTES,
+  MAX_FILES_PER_CLIP,
+  MAX_IMAGES_PER_CLIP,
   MAX_PIN_ATTEMPTS,
   generateCode,
   isAllowedTimer,
+  mimeAllowed,
   normalizeCode,
   sanitizeFileName,
   validateCustomCode,
+  validateFileBatch,
   validatePin,
   isSafeNotifyUrl,
 } from "./clip-rules";
@@ -18,9 +22,17 @@ import {
 export const createSchema = z.object({
   type: z.enum(["text", "image", "file"]),
   content: z.string().max(200000).optional(),
-  filePath: z.string().max(400).optional(),
-  fileName: z.string().max(255).optional(),
-  fileMime: z.string().max(255).optional(),
+  files: z
+    .array(
+      z.object({
+        path: z.string().max(400),
+        name: z.string().max(255),
+        mime: z.string().max(255).default("application/octet-stream"),
+        size: z.number().int().nonnegative(),
+      }),
+    )
+    .max(MAX_IMAGES_PER_CLIP + MAX_FILES_PER_CLIP)
+    .optional(),
   customCode: z.string().max(20).optional(),
   pin: z.string().max(8).optional(),
   burnAfterRead: z.boolean(),
@@ -30,6 +42,8 @@ export const createSchema = z.object({
 });
 
 export type CreateInput = z.infer<typeof createSchema>;
+
+const FILE_PATH_RE = /^clips\/[0-9a-f-]{36}\/[A-Za-z0-9._-]+$/;
 
 export async function createClipCore(data: CreateInput) {
     const g = await guard("create", 10);
@@ -46,6 +60,7 @@ export async function createClipCore(data: CreateInput) {
       return { ok: false as const, error: "Ping URL must be a public https:// address." };
     await sweep();
 
+    let fileRows: { path: string; name: string; mime: string; size: number }[] = [];
     let fileSize: number | null = null;
     if (data.type === "text") {
       const text = data.content ?? "";
@@ -53,26 +68,33 @@ export async function createClipCore(data: CreateInput) {
       if (new TextEncoder().encode(text).length > s.max_text_bytes)
         return { ok: false as const, error: "too_large" };
     } else {
-      if (!data.filePath || !/^clips\/[0-9a-f-]{36}\/[A-Za-z0-9._-]+$/.test(data.filePath))
-        return { ok: false as const, error: "bad_file" };
-      const [, folder, name] = data.filePath.split("/");
-      const { data: listed } = await supabaseAdmin.storage
-        .from(BUCKET)
-        .list(`clips/${folder}`, { search: name ?? "" });
-      const obj = listed?.find((o) => o.name === name);
-      if (!obj) return { ok: false as const, error: "bad_file" };
-      fileSize = Number((obj.metadata as { size?: number } | null)?.size ?? 0);
-      const max = data.type === "image" ? s.max_image_bytes : s.max_file_bytes;
-      if (fileSize > max) {
-        await supabaseAdmin.storage.from(BUCKET).remove([data.filePath]);
-        return { ok: false as const, error: "too_large" };
+      const files = data.files ?? [];
+      const batchErr = validateFileBatch(data.type, files, s);
+      if (batchErr) return { ok: false as const, error: batchErr };
+      const paths = files.map((f) => f.path);
+      for (const f of files) {
+        if (!FILE_PATH_RE.test(f.path)) return { ok: false as const, error: "bad_file" };
+        if (data.type === "file" && !mimeAllowed(f.mime || "application/octet-stream", s.mime_allowlist))
+          return { ok: false as const, error: "bad_type" };
       }
-      const { data: dup } = await supabaseAdmin
-        .from("clips")
-        .select("id")
-        .eq("file_path", data.filePath)
-        .maybeSingle();
-      if (dup) return { ok: false as const, error: "bad_file" };
+      // A stored file may only ever belong to one clip.
+      const { data: dups } = await supabaseAdmin.from("clip_files").select("path").in("path", paths);
+      if (dups?.length) return { ok: false as const, error: "bad_file" };
+      const { data: legacyDups } = await supabaseAdmin.from("clips").select("file_path").in("file_path", paths);
+      if (legacyDups?.length) return { ok: false as const, error: "bad_file" };
+      for (const f of files) {
+        const [, folder, name] = f.path.split("/");
+        const { data: listed } = await supabaseAdmin.storage
+          .from(BUCKET)
+          .list(`clips/${folder}`, { search: name ?? "" });
+        const obj = listed?.find((o) => o.name === name);
+        if (!obj) return { ok: false as const, error: "bad_file" };
+        const size = Number((obj.metadata as { size?: number } | null)?.size ?? 0);
+        const max = data.type === "image" ? s.max_image_bytes : s.max_file_bytes;
+        if (size > max) return { ok: false as const, error: "too_large" };
+        fileRows.push({ path: f.path, name: sanitizeFileName(f.name || "file"), mime: f.mime || "application/octet-stream", size });
+      }
+      fileSize = fileRows.reduce((sum, f) => sum + f.size, 0);
     }
 
     let code: string;
@@ -96,32 +118,47 @@ export async function createClipCore(data: CreateInput) {
     const deleteToken = randomToken();
     const notifyToken = data.notify ? randomToken() : null;
     const expiresAt = new Date(Date.now() + data.timerSeconds * 1000).toISOString();
-    const { error } = await supabaseAdmin.from("clips").insert({
-      code,
-      type: data.type,
-      content: data.type === "text" ? (data.content ?? "") : null,
-      file_path: data.type === "text" ? null : (data.filePath ?? null),
-      file_name: data.type === "text" ? null : sanitizeFileName(data.fileName ?? "file"),
-      file_mime: data.type === "text" ? "text/plain" : data.fileMime || "application/octet-stream",
-      file_size: data.type === "text" ? new TextEncoder().encode(data.content ?? "").length : fileSize,
-      pin_hash: data.pin ? await bcrypt.hash(data.pin, 8) : null,
-      pin_protected: !!data.pin,
-      burn_after_read: data.burnAfterRead,
-      delete_token: await sha256(deleteToken),
-      expires_at: expiresAt,
-      notify_token: notifyToken ? await sha256(notifyToken) : null,
-      notify_url: notifyToken && data.notifyUrl ? data.notifyUrl : null,
-    });
-    if (error) {
-      if (error.code === "23505") return { ok: false as const, error: "taken" };
+    const { data: clip, error } = await supabaseAdmin
+      .from("clips")
+      .insert({
+        code,
+        type: data.type,
+        content: data.type === "text" ? (data.content ?? "") : null,
+        file_path: null,
+        file_name: null,
+        file_mime: null,
+        file_size: data.type === "text" ? new TextEncoder().encode(data.content ?? "").length : fileSize,
+        pin_hash: data.pin ? await bcrypt.hash(data.pin, 8) : null,
+        pin_protected: !!data.pin,
+        burn_after_read: data.burnAfterRead,
+        delete_token: await sha256(deleteToken),
+        expires_at: expiresAt,
+        notify_token: notifyToken ? await sha256(notifyToken) : null,
+        notify_url: notifyToken && data.notifyUrl ? data.notifyUrl : null,
+      })
+      .select("id")
+      .single();
+    if (error || !clip) {
+      if (error?.code === "23505") return { ok: false as const, error: "taken" };
       console.error(error);
       return { ok: false as const, error: "save_failed" };
+    }
+    if (fileRows.length) {
+      const { error: filesError } = await supabaseAdmin.from("clip_files").insert(
+        fileRows.map((f, i) => ({ clip_id: clip.id, path: f.path, name: f.name, mime: f.mime, size: f.size, position: i })),
+      );
+      if (filesError) {
+        console.error(filesError);
+        return { ok: false as const, error: "save_failed" };
+      }
     }
     return { ok: true as const, code: code.toUpperCase(), deleteToken, expiresAt, notifyToken };
 }
 
+export type ClipFileView = { url: string | null; name: string; mime: string; size: number };
+
 export type RetrieveResult =
-  | { status: "ok"; type: "text" | "image" | "file"; content: string | null; url: string | null; fileName: string | null; fileMime: string | null; fileSize: number | null; expiresAt: string; burned: boolean; code: string }
+  | { status: "ok"; type: "text" | "image" | "file"; content: string | null; files: ClipFileView[]; url: string | null; fileName: string | null; fileMime: string | null; fileSize: number | null; expiresAt: string; burned: boolean; code: string }
   | { status: "pin_required" }
   | { status: "wrong_pin"; remaining: number }
   | { status: "locked" }
@@ -163,13 +200,32 @@ export async function retrieveClipCore(data: { code: string; pin?: string | unde
       }
     }
 
-    let url: string | null = null;
-    if (clip.file_path) {
+    // Attached files: new multi-file table, falling back to the legacy single-file columns.
+    const { data: rows } = await supabaseAdmin
+      .from("clip_files")
+      .select("path, name, mime, size")
+      .eq("clip_id", clip.id)
+      .order("position");
+    const files: ClipFileView[] = [];
+    if (rows?.length) {
+      for (const r of rows) {
+        const { data: signed } = await supabaseAdmin.storage
+          .from(BUCKET)
+          .createSignedUrl(r.path, 60, { download: clip.type === "file" ? r.name : false });
+        files.push({ url: signed?.signedUrl ?? null, name: r.name, mime: r.mime, size: r.size });
+      }
+    } else if (clip.file_path) {
       const { data: signed } = await supabaseAdmin.storage
         .from(BUCKET)
         .createSignedUrl(clip.file_path, 60, { download: clip.type === "file" ? clip.file_name ?? true : false });
-      url = signed?.signedUrl ?? null;
+      files.push({
+        url: signed?.signedUrl ?? null,
+        name: clip.file_name ?? "file",
+        mime: clip.file_mime ?? "application/octet-stream",
+        size: clip.file_size ?? 0,
+      });
     }
+    const first = files[0] ?? null;
 
     const now = new Date().toISOString();
     if (clip.burn_after_read) {
@@ -191,11 +247,12 @@ export async function retrieveClipCore(data: { code: string; pin?: string | unde
         .eq("status", "active")
         .select("id");
       if (!burned || !burned.length) return { status: "burned" };
-      if (clip.file_path) {
-        await supabaseAdmin.from("storage_purge").insert({
-          file_path: clip.file_path,
-          purge_after: new Date(Date.now() + 2 * 60000).toISOString(),
-        });
+      const paths = [...(rows?.map((r) => r.path) ?? []), ...(clip.file_path ? [clip.file_path] : [])];
+      if (paths.length) {
+        await supabaseAdmin.from("storage_purge").insert(
+          paths.map((p) => ({ file_path: p, purge_after: new Date(Date.now() + 2 * 60000).toISOString() })),
+        );
+        if (rows?.length) await supabaseAdmin.from("clip_files").delete().eq("clip_id", clip.id);
       }
     } else {
       await supabaseAdmin
@@ -210,10 +267,11 @@ export async function retrieveClipCore(data: { code: string; pin?: string | unde
       status: "ok",
       type: clip.type as "text" | "image" | "file",
       content: clip.content,
-      url,
-      fileName: clip.file_name,
-      fileMime: clip.file_mime,
-      fileSize: clip.file_size,
+      files,
+      url: first?.url ?? null,
+      fileName: first?.name ?? null,
+      fileMime: first?.mime ?? null,
+      fileSize: first?.size ?? null,
       expiresAt: clip.expires_at,
       burned: clip.burn_after_read,
       code: clip.code.toUpperCase(),

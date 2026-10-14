@@ -115,7 +115,10 @@ export const deleteOwnClip = createServerFn({ method: "POST" })
       .eq("status", "active")
       .maybeSingle();
     if (!clip || clip.delete_token !== hash) return { ok: false, error: "not_found" };
-    if (clip.file_path) await supabaseAdmin.storage.from(BUCKET).remove([clip.file_path]);
+    const { data: rows } = await supabaseAdmin.from("clip_files").select("path").eq("clip_id", clip.id);
+    const paths = [...(rows?.map((r) => r.path) ?? []), ...(clip.file_path ? [clip.file_path] : [])];
+    if (paths.length) await supabaseAdmin.storage.from(BUCKET).remove(paths);
+    if (rows?.length) await supabaseAdmin.from("clip_files").delete().eq("clip_id", clip.id);
     await supabaseAdmin
       .from("clips")
       .update({
