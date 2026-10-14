@@ -21,9 +21,17 @@ export async function isCurrentUserAdmin() {
   return !!role;
 }
 
-/** Deletes the clip's stored file and erases its content. */
+/** Removes every stored file of a clip (multi-file table + legacy column) and erases its content. */
+async function removeClipFiles(clip: Pick<Clip, "id" | "file_path">) {
+  const { data: rows } = await supabase.from("clip_files").select("path").eq("clip_id", clip.id);
+  const paths = [...(rows ?? []).map((r) => r.path), ...(clip.file_path ? [clip.file_path] : [])];
+  if (paths.length) await supabase.storage.from("clips-files").remove(paths);
+  if (rows?.length) await supabase.from("clip_files").delete().eq("clip_id", clip.id);
+}
+
+/** Deletes the clip's stored files and erases its content. */
 export async function adminDeleteClip(clip: Pick<Clip, "id" | "code" | "file_path">) {
-  if (clip.file_path) await supabase.storage.from("clips-files").remove([clip.file_path]);
+  await removeClipFiles(clip);
   const { error } = await supabase
     .from("clips")
     .update({
@@ -40,7 +48,7 @@ export async function adminDeleteClip(clip: Pick<Clip, "id" | "code" | "file_pat
 }
 
 export async function adminForceExpire(clip: Pick<Clip, "id" | "code" | "file_path">) {
-  if (clip.file_path) await supabase.storage.from("clips-files").remove([clip.file_path]);
+  await removeClipFiles(clip);
   const now = new Date().toISOString();
   const { error } = await supabase
     .from("clips")
