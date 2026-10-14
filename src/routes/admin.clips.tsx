@@ -196,18 +196,38 @@ function toLocalInput(d: Date) {
 }
 
 function ClipDetail({ clip, onChanged, onClose }: { clip: Clip; onChanged: () => void; onClose: () => void }) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [urls, setUrls] = useState<{ name: string; url: string | null; size: number }[] | null>(null);
   const [newCode, setNewCode] = useState(clip.code.toUpperCase());
   const maxExp = maxExtendedExpiry(new Date(clip.created_at));
   const [newExpiry, setNewExpiry] = useState(toLocalInput(maxExp));
   const active = clip.status === "active";
 
   useEffect(() => {
-    setUrl(null);
-    if (clip.file_path) {
-      supabase.storage.from("clips-files").createSignedUrl(clip.file_path, 300).then(({ data }) => setUrl(data?.signedUrl ?? null));
-    }
-  }, [clip.file_path]);
+    setUrls(null);
+    let cancelled = false;
+    (async () => {
+      const { data: rows } = await supabase
+        .from("clip_files")
+        .select("name, path, size")
+        .eq("clip_id", clip.id)
+        .order("position");
+      const list = rows?.length
+        ? rows
+        : clip.file_path
+          ? [{ name: clip.file_name ?? "file", path: clip.file_path, size: clip.file_size ?? 0 }]
+          : [];
+      const signed = await Promise.all(
+        list.map(async (r) => {
+          const { data } = await supabase.storage.from("clips-files").createSignedUrl(r.path, 300);
+          return { name: r.name ?? "file", url: data?.signedUrl ?? null, size: r.size ?? 0 };
+        }),
+      );
+      if (!cancelled) setUrls(signed);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [clip.id, clip.file_path, clip.file_name, clip.file_size]);
 
   const act = async (fn: () => Promise<void>, msg: string) => {
     try {
@@ -261,13 +281,45 @@ function ClipDetail({ clip, onChanged, onClose }: { clip: Clip; onChanged: () =>
     <div className="flex flex-col gap-5">
       <SheetHeader>
         <SheetTitle className="flex items-center gap-2 font-mono text-xl uppercase">{clip.code} <StatusBadge status={clip.status} /></SheetTitle>
-        <SheetDescription>{clip.file_name ?? "Text clip"}</SheetDescription>
+        <SheetDescription>{clip.type === "text" ? "Text clip" : urls && urls.length > 1 ? `${urls.length} files` : (urls?.[0]?.name ?? clip.file_name ?? "File")}</SheetDescription>
       </SheetHeader>
 
       <section aria-label="Content">
         {clip.type === "text" && (clip.content != null ? <pre className="max-h-72 overflow-auto whitespace-pre-wrap break-words rounded-lg border bg-muted p-3 font-mono text-xs">{clip.content}</pre> : <p className="text-sm text-muted-foreground">Content erased.</p>)}
-        {clip.type === "image" && (url ? <img src={url} alt={clip.file_name ?? "Clip image"} className="max-h-72 rounded-lg border object-contain" /> : <p className="text-sm text-muted-foreground">{clip.file_path ? "Loading…" : "File erased."}</p>)}
-        {clip.type === "file" && (url ? <Button asChild variant="outline"><a href={url} download={clip.file_name ?? true}><Download /> Download {clip.file_name}</a></Button> : <p className="text-sm text-muted-foreground">{clip.file_path ? "Loading…" : "File erased."}</p>)}
+        {clip.type !== "text" &&
+          (urls === null ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : urls.length === 0 ? (
+            <p className="text-sm text-muted-foreground">File erased.</p>
+          ) : urls.length === 1 ? (
+            clip.type === "image" ? (
+              urls[0].url ? (
+                <img src={urls[0].url} alt={urls[0].name || "Clip image"} className="max-h-72 rounded-lg border object-contain" />
+              ) : (
+                <p className="text-sm text-muted-foreground">Couldn't load that file.</p>
+              )
+            ) : (
+              urls[0].url && (
+                <Button asChild variant="outline">
+                  <a href={urls[0].url} download={urls[0].name || true}><Download /> Download {urls[0].name}</a>
+                </Button>
+              )
+            )
+          ) : (
+            <ul className="flex max-h-72 flex-col gap-2 overflow-auto">
+              {urls.map((f, i) => (
+                <li key={i} className="flex items-center gap-3 rounded-lg border p-2.5 text-sm">
+                  <span className="min-w-0 flex-1 truncate">{f.name}</span>
+                  <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{formatBytes(f.size)}</span>
+                  {f.url && (
+                    <Button asChild variant="outline" size="sm">
+                      <a href={f.url} download={f.name || true}><Download /> Save</a>
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          ))}
       </section>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
