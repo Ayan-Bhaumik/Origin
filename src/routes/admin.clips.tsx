@@ -291,20 +291,18 @@ function ClipDetail({ clip, onChanged, onClose }: { clip: Clip; onChanged: () =>
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : urls.length === 0 ? (
             <p className="text-sm text-muted-foreground">File erased.</p>
-          ) : urls.length === 1 ? (
+          ) : urls[0] && urls.length === 1 ? (
             clip.type === "image" ? (
               urls[0].url ? (
                 <img src={urls[0].url} alt={urls[0].name || "Clip image"} className="max-h-72 rounded-lg border object-contain" />
               ) : (
                 <p className="text-sm text-muted-foreground">Couldn't load that file.</p>
               )
-            ) : (
-              urls[0].url && (
-                <Button asChild variant="outline">
-                  <a href={urls[0].url} download={urls[0].name || true}><Download /> Download {urls[0].name}</a>
-                </Button>
-              )
-            )
+            ) : urls[0].url ? (
+              <Button asChild variant="outline">
+                <a href={urls[0].url} download={urls[0].name || true}><Download /> Download {urls[0].name}</a>
+              </Button>
+            ) : null
           ) : (
             <ul className="flex max-h-72 flex-col gap-2 overflow-auto">
               {urls.map((f, i) => (

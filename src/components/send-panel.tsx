@@ -213,6 +213,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
       const uploaded: { path: string; name: string; mime: string; size: number }[] = [];
       for (let i = 0; i < batch.length; i++) {
         const f = batch[i];
+        if (!f) continue;
         setProgress(batch.length > 1 ? `Uploading ${i + 1} of ${batch.length}…` : "");
         const u = await upload({
           data: {
