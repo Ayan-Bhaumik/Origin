@@ -5,6 +5,9 @@ export const AUTO_CODE_LENGTH = 6;
 export const HARD_MAX_TIMER_SECONDS = 86400;
 export const MAX_PIN_ATTEMPTS = 5;
 export const LOCK_MINUTES = 15;
+export const MAX_IMAGES_PER_CLIP = 20;
+export const MAX_FILES_PER_CLIP = 20;
+export const MAX_TOTAL_FILE_BYTES = 100 * 1024 * 1024; // 100 MB total per clip
 
 export const DEFAULT_SETTINGS = {
   default_timer_seconds: 3600,
