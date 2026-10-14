@@ -41,6 +41,47 @@ export type Database = {
         }
         Relationships: []
       }
+      clip_files: {
+        Row: {
+          clip_id: string
+          created_at: string
+          id: string
+          mime: string
+          name: string
+          path: string
+          position: number
+          size: number
+        }
+        Insert: {
+          clip_id: string
+          created_at?: string
+          id?: string
+          mime?: string
+          name: string
+          path: string
+          position?: number
+          size?: number
+        }
+        Update: {
+          clip_id?: string
+          created_at?: string
+          id?: string
+          mime?: string
+          name?: string
+          path?: string
+          position?: number
+          size?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clip_files_clip_id_fkey"
+            columns: ["clip_id"]
+            isOneToOne: false
+            referencedRelation: "clips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clips: {
         Row: {
           burn_after_read: boolean
