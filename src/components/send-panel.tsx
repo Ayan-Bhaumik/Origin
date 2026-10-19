@@ -404,7 +404,11 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
                 {codeState === "taken" && "taken ✗"}
               </span>
             </div>
-            {codeError && <p className="text-xs text-destructive">{codeError}</p>}
+            {codeError ? (
+              <p className="text-xs text-destructive">{codeError}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">4–20 characters: letters, numbers or hyphens. Not case-sensitive. Reserved words like admin, api, login aren't allowed.</p>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="pin">Protect with PIN</Label>
