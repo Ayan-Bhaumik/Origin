@@ -199,9 +199,30 @@ function ClipView({ clip, onReset }: { clip: Ok; onReset: () => void }) {
     }
   };
   const downloadAll = async () => {
-    for (const f of clip.files) {
-      await download(f);
-      await new Promise((r) => setTimeout(r, 400));
+    const id = toast.loading("Preparing zip…");
+    try {
+      const { default: JSZip } = await import("jszip");
+      const zip = new JSZip();
+      const used = new Set<string>();
+      for (const [i, f] of clip.files.entries()) {
+        if (!f.url) continue;
+        const blob = await (await fetch(f.url)).blob();
+        let name = f.name || `${clip.type}-${i + 1}`;
+        if (used.has(name)) name = `${i + 1}-${name}`;
+        used.add(name);
+        zip.file(name, blob);
+      }
+      const out = await zip.generateAsync({ type: "blob", compression: "STORE" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(out);
+      a.download = `origin-${clip.code}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 30_000);
+      toast.success("Zip downloaded", { id });
+    } catch {
+      toast.error("Couldn't build the zip. Retrieve the clip again.", { id });
     }
   };
 
