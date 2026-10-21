@@ -49,3 +49,21 @@ li button { background: transparent; border: 1px solid #1F2937; color: #D1D5DB; 
 .text-box { white-space: pre-wrap; word-break: break-word; background: #111111; border: 1px solid #1F2937; border-radius: 10px; padding: 10px 12px; max-height: 220px; overflow: auto; font-size: 13px; }
 .thumb { display: block; max-width: 100%; max-height: 220px; margin: 0 auto; border-radius: 10px; border: 1px solid #1F2937; }
 .meta { font-size: 12px; color: #9CA3AF; margin: 6px 0 0; }
+.mode { display: flex; gap: 6px; margin-bottom: 8px; }
+.mode .chip { flex: 1; text-align: center; padding: 5px; }
+.drop { border: 1px dashed #374151; border-radius: 10px; padding: 18px 12px; text-align: center; color: #9CA3AF; cursor: pointer; font-size: 13px; background: #111111; }
+.drop:hover, .drop.over { border-color: #6366F1; color: #F9FAFB; background: rgba(99,102,241,.08); }
+.files { margin-top: 8px; max-height: 150px; overflow: auto; }
+.files li { font-size: 12px; padding: 6px 8px; }
+.files li .n { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.files li .s { color: #9CA3AF; }
+.counter { font-size: 12px; color: #9CA3AF; margin: 6px 0 0; }
+.tab-link { width: 100%; margin-top: 8px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.qr { display: flex; justify-content: center; margin: 10px 0 4px; }
+.qr-box { background: #FFFFFF; padding: 8px; border-radius: 10px; line-height: 0; }
+.qr-box svg { width: 132px; height: 132px; display: block; }
+.gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.gallery img { width: 100%; height: 100px; object-fit: cover; border-radius: 8px; border: 1px solid #1F2937; cursor: pointer; }
+.file-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #111111; border: 1px solid #1F2937; border-radius: 8px; margin-top: 6px; font-size: 12px; }
+.file-row .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file-row button { background: transparent; border: 1px solid #1F2937; color: #D1D5DB; border-radius: 6px; padding: 2px 8px; font: inherit; font-size: 12px; cursor: pointer; }
