@@ -4,7 +4,9 @@ if (typeof importScripts === "function") importScripts("shared.js");
 ext.runtime.onInstalled.addListener(function () {
   ext.contextMenus.removeAll(function () {
     ext.contextMenus.create({ id: "send-text", title: "Send to origin", contexts: ["selection"] });
-    ext.contextMenus.create({ id: "send-image", title: "Send to origin", contexts: ["image"] });
+    ext.contextMenus.create({ id: "send-image", title: "Send image to origin", contexts: ["image"] });
+    ext.contextMenus.create({ id: "send-link", title: "Send link to origin", contexts: ["link"] });
+    ext.contextMenus.create({ id: "send-page", title: "Send this page to origin", contexts: ["page"] });
   });
 });
 
@@ -46,6 +48,12 @@ ext.contextMenus.onClicked.addListener(async function (info, tab) {
     } else if (info.menuItemId === "send-image") {
       type = "image";
       result = await sendClip(await imageForm(info.srcUrl));
+    } else if (info.menuItemId === "send-link" || info.menuItemId === "send-page") {
+      type = "text";
+      var url = info.menuItemId === "send-link" ? info.linkUrl : (info.pageUrl || (tab && tab.url));
+      if (!url || !/^https?:/i.test(url)) throw new Error("That link can't be sent.");
+      var title = info.menuItemId === "send-page" && tab && tab.title ? tab.title + "\n" : "";
+      result = await sendClip({ type: "text", content: title + url, timer: 3600 });
     } else return;
     await addHistory({ code: result.code, type: type, expiresAt: result.expiresAt, createdAt: new Date().toISOString() });
     await notifyTab(tabId, { kind: "origin-sent", code: result.code });
