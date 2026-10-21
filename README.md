@@ -1,226 +1,187 @@
+
 <div align="center">
    
 ### Created by
 
 # Ayan Bhaumik
-AI/ML Engineer · Full-Stack Developer
+**AI/ML Engineer · Full-Stack Developer**
 
-[![Portfolio](https://img.shields.io/badge/Portfolio-ayanbhaumik.in-6366F1?style=flat-square)](https://ayanbhaumik.in/)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-ayan--bhaumik-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ayan-bhaumik/)
-[![GitHub](https://img.shields.io/badge/GitHub-Ayan--Bhaumik-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Ayan-Bhaumik)
-[![Scholar](https://img.shields.io/badge/Google%20Scholar-Publications-4285F4?style=flat-square&logo=googlescholar&logoColor=white)](https://scholar.google.com/citations?user=ArGuUjgAAAAJ&hl=en)
-[![Email](https://img.shields.io/badge/Email-connect@mrayanbhaumik.in-EA4335?style=flat-square&logo=gmail&logoColor=white)](mailto:connect@mrayanbhaumik.in)
+[![Portfolio](https://img.shields.io/badge/Portfolio-ayanbhaumik.in-6366F1?style=for-the-badge)](https://ayanbhaumik.in/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-ayan--bhaumik-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/ayan-bhaumik/)
+[![GitHub](https://img.shields.io/badge/GitHub-Ayan--Bhaumik-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Ayan-Bhaumik)
+[![Google Scholar](https://img.shields.io/badge/Scholar-Publications-4285F4?style=for-the-badge&logo=googlescholar&logoColor=white)](https://scholar.google.com/citations?user=ArGuUjgAAAAJ&hl=en)
+[![Email](https://img.shields.io/badge/Email-connect@mrayanbhaumik.in-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:connect@mrayanbhaumik.in)
 
 ---
 
 # origin.
 
-**Move anything between your devices, instantly.**
+### **Move anything between your devices, instantly.**
 
-Text, images and files — no account, no app. Just a short code.
+Text, code, images, and files — no accounts, no logins, no friction. Just a short code.
 
-[![Live](https://img.shields.io/badge/Live-origin.ayanbhaumik.in-6366F1?style=flat-square&logoColor=white)](https://origin.ayanbhaumik.in/)
-[![Supabase](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
-[![Cloudflare](https://img.shields.io/badge/Hosted%20on-Cloudflare-F38020?style=flat-square&logo=cloudflare&logoColor=white)](https://cloudflare.com)
-[![Domain from Hostinger](https://img.shields.io/badge/Domain-Hostinger-673DE6?style=flat-square)](https://www.hostinger.com/)
+[![Live App](https://img.shields.io/badge/Live_App-origin.ayanbhaumik.in-6366F1?style=flat-square&logoColor=white)](https://origin.ayanbhaumik.in/)
+[![Version](https://img.shields.io/badge/Version-v1.1.0-818CF8?style=flat-square)](https://github.com/Ayan-Bhaumik/Origin/releases/tag/v1.1.0)
+[![React](https://img.shields.io/badge/React_19-TanStack_Start-000000?style=flat-square&logo=react&logoColor=61DAFB)](https://tanstack.com/start)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Backend](https://img.shields.io/badge/Backend-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white)](https://supabase.com)
+[![License](https://img.shields.io/badge/License-MIT-gray?style=flat-square)](LICENSE)
 
 </div>
 
 ---
 
-## What is origin?
+## ⚡ What is origin?
 
-**origin** is a lightweight, anonymous cross-device clipboard. Most clipboards only work on one device. origin gives you a secure, temporary channel to move text, images, and files between any devices — no account, no app, no friction.
+Most clipboards only work within an ecosystem (Apple AirDrop, Windows Clipboard, Google sync). **origin** provides a frictionless, universal bridge across all operating systems and devices (iOS, Android, macOS, Windows, Linux) without requiring app installs, logins, or user tracking. 
 
----
-
-## Features
-
-### Sending Clips
-- **Three content types** — Text (100 KB), Images (10 MB), Files (25 MB)
-- **Paste & drop anywhere** — paste screenshots or drag files directly onto the dropzone
-- **Auto-generated codes** — clean 6-character codes, no confusing characters (`0`, `O`, `1`, `I`, `L`)
-- **Custom codes** — 4–20 characters with live availability check and reserved word blocking
-- **PIN protection** — optional 4–8 digit PIN, locked for 15 min after 5 wrong attempts
-- **Burn after read** — content wiped immediately on first view
-- **Flexible expiry** — 10 min · 30 min · 1 hr (default) · 2 hr · 3 hr · 6 hr · 12 hr · 24 hr max
-- **Read receipts** — optional webhook ping when your clip is viewed
-- **Success screen** — large code display, copy link, QR code, live countdown, delete-now button
-
-### Retrieving Clips
-- **Deep links** — `/r/:code` opens and fetches instantly
-- **PIN challenge** — clean prompt if protected
-- **Instant actions** — copy text, copy/download images, download files
-- **Abuse reporting** — built-in report modal for recipients
-- **Clear status messages** — expired, burned, locked, rate-limited — all handled gracefully
-
-### 🧩 Browser Extension
-Send text selections and web images to origin with a single right-click or via the toolbar popup.
-
-[![Chrome](https://img.shields.io/badge/Download-Chrome%20%2F%20Chromium-4285F4?style=flat-square&logo=googlechrome&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.0.0/origin-chrome.zip)
-[![Firefox](https://img.shields.io/badge/Download-Firefox-FF7139?style=flat-square&logo=firefox&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.0.0/origin-firefox.zip)
-
-**Chrome / Brave / Edge:**
-1. Download and extract `origin-chrome.zip`
-2. Go to `chrome://extensions/` and enable **Developer mode** (top right)
-3. Click **Load unpacked** and select the extracted folder
-
-**Firefox:**
-1. Download and extract `origin-firefox.zip`
-2. Go to `about:debugging` → **This Firefox** → **Load Temporary Add-on**
-3. Select any file inside the extracted folder
-
-**Extension features:**
-- Right-click any selected text → **Send to origin**
-- Right-click any image → **Send to origin**
-- Toolbar popup with Send and Retrieve tabs
-- Timer chips, recent history, auto-copy code on send
-- Toast overlay injected into the page after every send
-
-### PWA
-- Installable on iOS and Android as a standalone app
-- Offline shell — loads without internet, graceful messaging for live actions
-
-### Recent History
-- Last 5 sent clips saved locally in your browser
-- Live countdown per clip, copy link, auto-removes on expiry
-
-### Markdown Preview
-- Auto-detects markdown in text clips
-- Raw / Preview toggle with syntax-highlighted code blocks
-- Powered by react-markdown + remark-gfm + rehype-highlight
-
-### Keyboard Shortcuts
-| Shortcut | Action |
-|----------|--------|
-| `⌘ / Ctrl + Enter` | Send clip |
-| `Escape` | Clear form / close modal |
-| `/` | Focus retrieve input |
-
-### Admin Panel `/admin`
-- **Dashboard** — 30-day activity chart, clip type distribution, key stats
-- **Clips manager** — searchable, filterable table with full detail drawer; view, extend, force-expire, delete, bulk delete
-- **Reports queue** — review flagged clips, dismiss or delete
-- **Live settings** — timers, size limits, MIME allowlist, blocked codes, maintenance mode, announcement banner
-- **Security** — IP block list, rate-limit activity log
-- **Audit log** — every admin action logged, CSV export
+Paste or drop your content, get an unambiguous 6-character code (or scan an instant QR code), and pick it up on any device in seconds. Everything is temporary and auto-purges after expiration.
 
 ---
 
-## Tech Stack
+## 🚀 Key Features
+
+### 📤 Sending Clips
+- **Multi-Attachment Bundles** — Send up to **20 images** (10 MB each) and up to **20 files** (25 MB each) in a single clip, up to 100 MB total. One short code unlocks the whole bundle!
+- **Text & Code Clips** — Up to 100 KB text with automatic markdown detection and syntax highlighting.
+- **Paste & Drop Anywhere** — Paste screenshots or drag files directly onto the browser window.
+- **Unambiguous Codes** — Auto-generated 6-character codes with confusing look-alike characters removed (`0`, `O`, `1`, `I`, `L`).
+- **Custom Codes** — Pick memorable custom codes (4–20 characters: letters, numbers, hyphens) with live availability verification.
+- **PIN Lockout** — Optional 4–8 digit PIN with brute-force rate-limiting (locks for 15 minutes after 5 failed attempts).
+- **Burn-After-Read** — Instant permanent deletion immediately following first retrieval.
+- **Granular Expiry Timers** — `10 min` · `30 min` · `1 hr (Default)` · `2 hr` · `3 hr` · `6 hr` · `12 hr` · `24 hr max`.
+- **Read Receipts** — Optional one-time webhook trigger notified the moment the clip is opened.
+- **Instant QR Code** — Displayed alongside copyable codes for quick camera scanning from mobile devices.
+
+### 📥 Retrieving Clips
+- **Instant Deep Links** — Direct navigation via `origin.ayanbhaumik.in/r/:code`.
+- **One-Click ZIP Download** — Multi-file and multi-image bundles can be packaged and downloaded instantly as a single `.zip` archive on the fly in the browser.
+- **Markdown Studio** — View text with a **Raw / Preview** toggle, rendered tables, task lists, and syntax-highlighted code blocks.
+- **Security Challenges** — Clean PIN prompt, remaining-attempt counters, and lock timers.
+- **Abuse Reporting** — Built-in flag-and-review modal to report prohibited content directly to the moderation queue.
+
+---
+
+## 🧩 Browser Extensions (Chrome & Firefox)
+
+Send text selections, images, links, or whole tabs directly to origin with a single right-click or through the quick popup.
+
+<div align="center">
+
+[![Download Chrome Extension](https://img.shields.io/badge/Download-Chrome%20%2F%20Chromium%20v1.1-4285F4?style=for-the-badge&logo=googlechrome&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.1.0/origin-chrome_v1.1.zip)
+[![Download Firefox Add-on](https://img.shields.io/badge/Download-Firefox%20v1.1-FF7139?style=for-the-badge&logo=firefox&logoColor=white)](https://github.com/Ayan-Bhaumik/Origin/releases/download/v1.1.0/origin-firefox_v1.1.zip)
+
+</div>
+
+### ✨ Extension Highlights:
+- **Right-Click Context Menu**:
+  - Right-click text selection → **"Send to origin"**
+  - Right-click image → **"Send image to origin"**
+  - Right-click hyperlink → **"Send link to origin"**
+  - Right-click page background → **"Send this page to origin"**
+- **Popup Workflow**:
+  - **"Use this page's link"** — 1-click grab of current tab title and URL.
+  - **Multi-File Attachments** — Drag and drop or attach up to 20 files directly from the popup.
+  - **Instant QR Code Generator** — Generate mobile-scannable QR codes immediately after sending.
+  - **Retrieve Tab** — Fetch text, images, or download files right inside the extension window.
+  - **Recent History** — Quick access and 1-click link copying for your last 5 sent codes.
+
+#### Installation:
+* **Chrome / Brave / Edge / Chromium**: Download `origin-chrome_v1.1.zip` → Extract → Go to `chrome://extensions/` → Enable **Developer Mode** → Click **Load Unpacked** → Select the extracted folder.
+* **Firefox**: Download `origin-firefox_v1.1.zip` → Go to `about:debugging#/runtime/this-firefox` → Click **Load Temporary Add-on** → Select any file in the unzipped folder.
+
+---
+
+## 📱 Progressive Web App (PWA) & Shortcuts
+
+- **Installable App** — Add origin to your home screen on iOS and Android for a native app feel.
+- **Offline Shell** — Built with service-worker caching for instant cold starts even on unstable networks.
+- **Local History** — Your last 5 sent clips are remembered locally in the browser with live countdown timers.
+- **Keyboard Shortcuts**:
+
+| Key Combination | Action |
+|---|---|
+| `⌘ / Ctrl + Enter` | Send current clip |
+| `/` | Instantly focus the retrieval input |
+| `Escape` | Clear form, dismiss results, or close modals |
+
+---
+
+## 🛡️ Admin Suite (`/admin`)
+
+- **Telemetry Dashboard** — Real-time metrics, 30-day activity graphs, and content type breakdowns.
+- **Clip Management** — Search, inspect metadata, extend TTL, force-expire, or bulk-delete.
+- **Abuse Queue** — Review flagged clips with one-click resolution or permanent purging.
+- **Dynamic Controls** — Live toggle for maintenance mode, banner announcements, timer ceilings, and blocked code lists.
+- **Full Audit Log** — Immutable audit trail of every moderator action with CSV export.
+
+---
+
+## 🛠️ Architecture & Tech Stack
+
+```text
+[ Browser / PWA / Extension ]
+             │
+             ▼
+  [ TanStack Start v1 (React 19) + Vite 7 ]
+             │
+             ├── Client State & Caching: TanStack Query
+             ├── Styling & Design System: Tailwind CSS v4
+             ├── In-Browser Compression: JSZip
+             │
+             ▼
+  [ Server Functions & REST API (/api/public/*) ]
+             │
+             ▼
+  [ Supabase Cloud Infrastructure ]
+     ├── Database: PostgreSQL with Row-Level Security (RLS)
+     ├── File Storage: Private encrypted buckets with signed access URLs
+     └── Automation: Scheduled purge queues & cron expiration sweeps
+```
 
 | Layer | Technology |
-|-------|-----------|
-| Frontend | React 18 + TypeScript + Vite |
-| Styling | Tailwind CSS |
-| Routing | React Router |
-| Data fetching | TanStack Query |
-| Backend | Supabase (Database + Storage + Auth + Edge Functions) |
-| Extension | Manifest V3 · Vanilla JS · Chrome + Firefox |
-| Hosting | Cloudflare Pages |
-| Domain | Hostinger |
+|---|---|
+| **Framework** | [TanStack Start v1](https://tanstack.com/start) (Full-Stack React 19 + SSR) |
+| **Build Tool** | Vite 7 |
+| **Styling** | Tailwind CSS v4 + Semantic Design Tokens |
+| **Archive Engine** | JSZip (Client-Side In-Memory ZIP Assembly) |
+| **Backend & Auth** | Supabase (PostgreSQL, Storage, Auth, Edge Functions) |
+| **Browser Extension** | Manifest V3 (Vanilla JS, Context Menus, Scripting API) |
+| **Hosting & DNS** | Cloudflare Edge & Hostinger DNS |
 
 ---
 
-## Getting Started
+## 🔒 Security & Privacy Model
 
-### Prerequisites
-- Node.js 18+
-- A Supabase project
-- npm or bun
-
-### Local Development
-
-```bash
-git clone https://github.com/Ayan-Bhaumik/origin
-cd origin
-npm install
-npm run dev
-```
-
-### Environment Variables
-
-Create a `.env` file in the root:
-
-```env
-VITE_SUPABASE_URL=your_supabase_project_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-RESEND_API_KEY=your_resend_api_key        # optional, for admin email alerts
-```
-
-### Supabase Setup
-
-1. Create a new Supabase project
-2. Run the migrations from `/supabase/migrations/` in the Supabase SQL editor
-3. Deploy the Edge Functions:
-   ```bash
-   supabase functions deploy expire-clips
-   supabase functions deploy cleanup-metadata
-   ```
-4. Set the cron schedules in Supabase Dashboard:
-   - `expire-clips` → `* * * * *` (every minute)
-   - `cleanup-metadata` → `0 * * * *` (every hour)
-5. Create your admin account in the Supabase Auth dashboard
-6. Enable Row Level Security — all policies are included in the migrations
-
-### Build for Production
-
-```bash
-npm run build
-```
+- **Zero User Identification**: No tracking cookies, accounts, email requirements, or fingerprinting.
+- **CSPRNG Code Generation**: Cryptographically secure pseudo-random 6-character tokens excluding visually ambiguous characters.
+- **Argon2-Grade PIN Hashing**: PINs and delete tokens are hashed at rest and evaluated using constant-time comparisons.
+- **Signed Storage Access**: All file downloads use time-limited (60-second) cryptographic signatures.
+- **Automatic Purging**: Expired content and associated storage blobs are systematically scrubbed through scheduled worker sweeps.
 
 ---
 
-## How It Works
+## 🗺️ Roadmap
 
-```
-01 Add your content      02 Get your code         03 Retrieve anywhere
-─────────────────────    ─────────────────────    ─────────────────────
-Paste text, drop an      A short code is          Enter the code on any
-image, or upload         generated. Share it      device to get your
-any file.                or scan the QR.          content.
-```
-
----
-
-## Security
-
-- Codes generated with CSPRNG, excluding look-alike characters
-- PINs stored as argon2 hashes, never returned to the client
-- Delete tokens hashed in the database
-- Signed, short-lived (60s) URLs for file downloads
-- Files stored under random IDs, never user-supplied paths
-- Constant-time PIN comparison to resist timing attacks
-- Rate limiting on send, retrieve, and availability-check endpoints
-- Content erased at expiry — only metadata retained for 7 days
-- Admin session protected with CSRF, httpOnly cookies, idle timeout
-
----
-
-## Privacy
-
-Content is temporary and auto-deleted. The site owner can access stored content via the admin panel. Do not share sensitive or personal information.
-
----
-
-## Roadmap
-
-- [x] Text, image, and file clips
-- [x] Custom codes + PIN protection
-- [x] Burn after read
-- [x] PWA + offline support
-- [x] Markdown preview + syntax highlighting
-- [x] Read receipts
-- [x] Admin dashboard
-- [x] Browser extension (Chrome + Firefox)
-- [ ] Multi-file upload (zip)
-- [ ] Public API with API keys
-- [ ] Send code by email / SMS
+- [x] Ephemeral text, code, image, and file clips
+- [x] Custom alphanumeric codes with real-time availability check
+- [x] PIN challenge protection & rate-limited lockouts
+- [x] Burn-after-read self-destruction
+- [x] PWA support with offline caching shell
+- [x] Markdown preview with syntax highlighting
+- [x] Webhook read receipts
+- [x] Admin operations console & abuse review queue
+- [x] Multi-attachment bundles (up to 20 images and 20 files per clip)
+- [x] Client-side "Download All (.zip)" packaging
+- [x] Manifest V3 Browser Extension v1.1 (Chrome & Firefox) with QR codes and page/link sharing
+- [ ] End-to-End Encryption (AES-256-GCM in URL hash fragment)
+- [ ] Terminal CLI client (`origin-cli`)
+- [ ] WebRTC peer-to-peer room mode for direct device-to-device transfers
 
 ---
 
 <div align="center">
 
-Built with [Supabase](https://supabase.com) · Hosted on [Cloudflare](https://cloudflare.com) · Domain via [Hostinger](https://hostinger.com)
+Made with care by [Ayan Bhaumik](https://ayanbhaumik.in/)
 
 </div>
