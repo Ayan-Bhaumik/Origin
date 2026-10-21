@@ -20,7 +20,20 @@
 
   <section id="panel-send">
     <div id="send-form">
-      <textarea id="text" placeholder="Paste or type anything…" rows="5" maxlength="100000"></textarea>
+      <div class="mode">
+        <button class="chip active" id="mode-text">Text</button>
+        <button class="chip" id="mode-files">Images &amp; files</button>
+      </div>
+      <div id="text-wrap">
+        <textarea id="text" placeholder="Paste or type anything…" rows="5" maxlength="100000"></textarea>
+        <button id="use-tab" class="secondary tab-link">Use this page's link</button>
+      </div>
+      <div id="files-wrap" hidden>
+        <div id="drop" class="drop" tabindex="0">Drop images or files here, or click to choose<br><span class="small">Up to 20 · 10 MB per image · 25 MB per file · 100 MB total</span></div>
+        <input id="picker" type="file" multiple hidden />
+        <ul id="file-list" class="files" hidden></ul>
+        <p id="counter" class="counter" hidden></p>
+      </div>
       <div class="chips" id="chips"></div>
       <button id="send" class="primary">Send</button>
       <p id="send-error" class="error" hidden></p>
@@ -28,7 +41,8 @@
     <div id="send-done" hidden>
       <p class="muted center">Your code</p>
       <p id="done-code" class="big-code"></p>
-      <p id="done-copied" class="muted center small">Copied to clipboard</p>
+      <p id="done-copied" class="muted center small">Copied to clipboard · scan to open on your phone</p>
+      <div class="qr"><div id="qr" class="qr-box"></div></div>
       <div class="row">
         <button id="copy-code" class="secondary">Copy Code</button>
         <button id="open-link" class="secondary">Open Link</button>
@@ -49,6 +63,7 @@
     <div id="result" hidden></div>
   </section>
 
+  <script src="qrcode.js"></script>
   <script src="shared.js"></script>
   <script src="popup.js"></script>
 </body>
