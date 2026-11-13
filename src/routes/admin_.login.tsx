@@ -1,13 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
-import { useServerFn } from "@tanstack/react-start";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { supabase } from "@/integrations/supabase/client";
-import { adminExists, bootstrapAdmin } from "@/lib/clips.functions";
 import { isCurrentUserAdmin } from "@/lib/admin-api";
 
 export const Route = createFileRoute("/admin_/login")({
@@ -32,27 +29,19 @@ function AdminLogin() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [setup, setSetup] = useState<boolean | null>(null);
-  const exists = useServerFn(adminExists);
-  const bootstrap = useServerFn(bootstrapAdmin);
+  const setup = false;
 
   useEffect(() => {
-    exists().then((r) => setSetup(!r.exists));
     isCurrentUserAdmin().then((ok) => {
       if (ok) navigate({ to: "/admin/dashboard" });
     });
-  }, [exists, navigate]);
+  }, [navigate]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      if (setup) {
-        const r = await bootstrap({ data: { email, password } });
-        if (!r.ok) throw new Error(r.error ?? "Could not create account.");
-        toast.success("Admin account created");
-      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw new Error("Incorrect email or password.");
       if (!(await isCurrentUserAdmin())) {
@@ -91,7 +80,7 @@ function AdminLogin() {
             {setup && <p className="text-xs text-muted-foreground">At least 10 characters.</p>}
           </div>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <Button type="submit" disabled={busy || setup === null}>
+          <Button type="submit" disabled={busy}>
             {busy ? (setup ? "Creating…" : "Signing in…") : setup ? "Create and sign in" : "Sign in"}
           </Button>
         </form>

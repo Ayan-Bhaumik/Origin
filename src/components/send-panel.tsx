@@ -210,7 +210,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
     setSending(true);
     try {
       const batch = kind === "image" ? images : kind === "file" ? files : [];
-      const uploaded: { path: string; name: string; mime: string; size: number }[] = [];
+      const uploaded: { path: string; ticket: string; name: string; mime: string; size: number }[] = [];
       for (let i = 0; i < batch.length; i++) {
         const f = batch[i];
         if (!f) continue;
@@ -230,6 +230,7 @@ export function SendPanel({ settings }: { settings: PublicSettings }) {
         if (error) throw new Error("Upload failed. Please try again.");
         uploaded.push({
           path: u.path,
+          ticket: u.ticket,
           name: f.name || (kind === "image" ? "pasted.png" : "file"),
           mime: f.type || "application/octet-stream",
           size: f.size,

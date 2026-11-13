@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
-import { BUCKET, guard, loadSettings, randomToken, sha256, sweep } from "./clips.server";
+import { BUCKET, guard, loadSettings, randomToken, secureRandomInt, sha256, sweep } from "./clips.server";
 import {
   LOCK_MINUTES,
   MAX_FILES_PER_CLIP,
@@ -29,6 +29,7 @@ export const createSchema = z.object({
         name: z.string().max(255),
         mime: z.string().max(255).default("application/octet-stream"),
         size: z.number().int().nonnegative(),
+        ticket: z.string().max(128).optional(),
       }),
     )
     .max(MAX_IMAGES_PER_CLIP + MAX_FILES_PER_CLIP)
@@ -105,7 +106,7 @@ export async function createClipCore(data: CreateInput) {
     } else {
       code = "";
       for (let i = 0; i < 8; i++) {
-        const c = normalizeCode(generateCode());
+        const c = normalizeCode(generateCode(secureRandomInt));
         const { data: ex } = await supabaseAdmin.from("clips").select("id").eq("code", c).maybeSingle();
         if (!ex) {
           code = c;
@@ -211,13 +212,13 @@ export async function retrieveClipCore(data: { code: string; pin?: string | unde
       for (const r of rows) {
         const { data: signed } = await supabaseAdmin.storage
           .from(BUCKET)
-          .createSignedUrl(r.path, 60, { download: clip.type === "file" ? r.name : false });
+          .createSignedUrl(r.path, clip.burn_after_read ? 15 : 60, { download: clip.type === "file" ? r.name : false });
         files.push({ url: signed?.signedUrl ?? null, name: r.name, mime: r.mime, size: r.size });
       }
     } else if (clip.file_path) {
       const { data: signed } = await supabaseAdmin.storage
         .from(BUCKET)
-        .createSignedUrl(clip.file_path, 60, { download: clip.type === "file" ? clip.file_name ?? true : false });
+        .createSignedUrl(clip.file_path, clip.burn_after_read ? 15 : 60, { download: clip.type === "file" ? clip.file_name ?? true : false });
       files.push({
         url: signed?.signedUrl ?? null,
         name: clip.file_name ?? "file",
@@ -250,7 +251,7 @@ export async function retrieveClipCore(data: { code: string; pin?: string | unde
       const paths = [...(rows?.map((r) => r.path) ?? []), ...(clip.file_path ? [clip.file_path] : [])];
       if (paths.length) {
         await supabaseAdmin.from("storage_purge").insert(
-          paths.map((p) => ({ file_path: p, purge_after: new Date(Date.now() + 2 * 60000).toISOString() })),
+          paths.map((p) => ({ file_path: p, purge_after: new Date(Date.now() + 20000).toISOString() })),
         );
         if (rows?.length) await supabaseAdmin.from("clip_files").delete().eq("clip_id", clip.id);
       }

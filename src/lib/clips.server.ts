@@ -68,3 +68,20 @@ export function randomToken() {
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 }
+
+/** HMAC ticket proving a storage path was issued by this server for a fresh upload. */
+export async function uploadTicket(path: string) {
+  const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "";
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode("upload-ticket:" + secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(path));
+  return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/** Cryptographically secure integer in [0, n). */
+export function secureRandomInt(n: number) {
+  const limit = Math.floor(0x100000000 / n) * n;
+  const buf = new Uint32Array(1);
+  do crypto.getRandomValues(buf);
+  while (buf[0]! >= limit);
+  return buf[0]! % n;
+}

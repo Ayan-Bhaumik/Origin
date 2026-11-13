@@ -9,6 +9,7 @@ import {
   randomToken,
   sha256,
   sweep,
+  uploadTicket,
 } from "./clips.server";
 import {
   LOCK_MINUTES,
@@ -85,12 +86,18 @@ export const createUploadUrl = createServerFn({ method: "POST" })
       .from(BUCKET)
       .createSignedUploadUrl(path);
     if (error || !signed) return { ok: false as const, error: "upload_failed" };
-    return { ok: true as const, path, token: signed.token };
+    return { ok: true as const, path, token: signed.token, ticket: await uploadTicket(path) };
   });
 
 export const createClip = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => createSchema.parse(d))
-  .handler(async ({ data }) => createClipCore(data));
+  .handler(async ({ data }) => {
+    // Only files uploaded through createUploadUrl (which issues a signed ticket) may be attached.
+    for (const f of data.files ?? []) {
+      if (!f.ticket || f.ticket !== (await uploadTicket(f.path))) return { ok: false as const, error: "bad_file" };
+    }
+    return createClipCore(data);
+  });
 
 export type { RetrieveResult };
 
@@ -145,38 +152,6 @@ export const reportClip = createServerFn({ method: "POST" })
       .insert({ clip_code: normalizeCode(data.code), reason: data.reason });
     return { ok: !error, error: error ? "save_failed" : null };
   });
-
-export const adminExists = createServerFn({ method: "GET" }).handler(async () => {
-  const { count } = await supabaseAdmin
-    .from("user_roles")
-    .select("id", { count: "exact", head: true })
-    .eq("role", "admin");
-  return { exists: (count ?? 0) > 0 };
-});
-
-/** One-time setup: creates the first admin account. Refuses once any admin exists. */
-export const bootstrapAdmin = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) =>
-    z.object({ email: z.string().trim().email().max(255), password: z.string().min(10).max(128) }).parse(d),
-  )
-  .handler(async ({ data }) => {
-    const g = await guard("bootstrap", 5, 600);
-    if (g !== "ok") return { ok: false, error: "Too many requests. Please slow down." };
-    const { count } = await supabaseAdmin
-      .from("user_roles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "admin");
-    if ((count ?? 0) > 0) return { ok: false, error: "An admin account already exists." };
-    const { data: created, error } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-    });
-    if (error || !created.user) return { ok: false, error: error?.message ?? "Could not create account." };
-    await supabaseAdmin.from("user_roles").insert({ user_id: created.user.id, role: "admin" });
-    return { ok: true, error: null };
-  });
-
 
 export const getReceipt = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ token: z.string().min(16).max(100) }).parse(d))
