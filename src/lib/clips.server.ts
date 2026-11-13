@@ -71,7 +71,7 @@ export function randomToken() {
 
 /** HMAC ticket proving a storage path was issued by this server for a fresh upload. */
 export async function uploadTicket(path: string) {
-  const secret = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  const secret = process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? "";
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode("upload-ticket:" + secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(path));
   return Array.from(new Uint8Array(sig)).map((b) => b.toString(16).padStart(2, "0")).join("");
