@@ -128,9 +128,13 @@ export function isSafeNotifyUrl(value: string) {
     return false;
   }
   if (u.protocol !== "https:") return false;
+  if (u.port && u.port !== "443") return false;
+  if (u.username || u.password) return false;
   const h = u.hostname.toLowerCase();
   if (h === "localhost" || h.endsWith(".localhost") || h.endsWith(".local") || h.endsWith(".internal")) return false;
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(":") || h.startsWith("[")) return false;
+  if (/^(0x[0-9a-f]+|\d+)$/i.test(h) || /\.(arpa|intranet|lan|home|corp|localdomain)$/.test(h)) return false;
+  if (h === "metadata.google.internal" || h.endsWith(".supabase.co") || h.endsWith(".supabase.in")) return false;
   return h.includes(".");
 }
 
